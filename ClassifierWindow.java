@@ -595,9 +595,23 @@ public class ClassifierWindow extends WindowManager {
      * where epsilon is the instance variable of the same name.
      */
     private Matrix createInitialTheta(int rows, int cols) {
+        
+        int max = epsilon;
+        int min = (-1 * epsilon); //negative epsilon
+        
+        double[][] matr = new double[rows][cols];
 
-
-        return null;
+        for(int i = 0; i < rows; i++){
+            for(int j = 0; j < cols; j++){
+                      
+                Random rand = new Random();
+    
+                matr[i][j] = rand.nextDouble() * (max - min) + min;
+            }
+        }
+        
+        Matrix temp = new Matrix(matr);
+        return temp;
 
     }
 

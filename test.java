@@ -91,6 +91,55 @@ public class test{
         temp2.print(10,1);
         
         /////////////////////////////////////////////////////////////////
+        
+        //////////////////////////////////////////////////////////////////
+        
+        double[][] d = new double[3][1];
+        
+        Matrix mat = new Matrix(d);
+        mat.print(3,1);
+        
+        /////////////////////////////////////////////////////////////////
+        
+        
+        
+        
+        
+        
+        
+        
+        ///////////////////////////////////////////////////////////////////
+        
+        
+        
+        int rows = 5;
+        int cols = 2;
+        int epsilon = 1;
+        
+        int max = epsilon;
+        int min = -1 * epsilon;
+        
+        double[][] matr = new double[rows][cols];
+
+        for(int i = 0; i < rows; i++){
+            for(int j = 0; j < cols; j++){
+                      
+                Random rand = new Random();
+    
+                matr[i][j] = rand.nextDouble() * (max - min) + min;
+            }
+        }
+        
+        
+        Matrix temp3 = new Matrix(matr);
+        temp3.print(rows,cols);
+        
+        
+        
+        
+        
+        
+        ////////////////////////////////////////////////////////////////////
 
     }
 
