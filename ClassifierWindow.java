@@ -20,8 +20,8 @@
  * 
  * 
  * 
- * @author (your name) 
- * @version (a version number or a date)
+ * @author Ryan Eghrari
+ * @version Feb 25 2017
  */
 
 import java.awt.*;
@@ -435,8 +435,22 @@ public class ClassifierWindow extends WindowManager {
      */
     
     private int getMax(Matrix m) {
+        
+        double[][] temp = m.getArray();
+        
+        int maxIndex    = 0; 
+        double maxVal   = 0.0;
+        
+        //Iterate through vector to find largest int
+        for(int i = 0; i < temp.length; i++){
+            
+            if(temp[i][0] > maxVal){
+                maxVal = temp[i][0];
+                maxIndex = i;
+            }
+        }
 
-        return 0;
+        return maxIndex;
 
     }
 
