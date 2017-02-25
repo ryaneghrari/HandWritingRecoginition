@@ -577,8 +577,16 @@ public class ClassifierWindow extends WindowManager {
      * 
      */
     private static Matrix inputStringToMatrix(String input) {
+        
+        Matrix temp = new Matrix(INPUT_VECTROR_DIMENSION,1);
+        
+        for(int i = 0; i < INPUT_VECTROR_DIMENSION; i++){
+            if(input.charAt(i) == '1'){
+                temp.set(i,0,1.0);
+            }
+        }
 
-        return null;
+        return temp;
     }
 
     
