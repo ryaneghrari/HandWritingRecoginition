@@ -52,6 +52,27 @@ public class test{
         }
         
         System.out.println("index: " + maxIndex);
+        
+        
+        
+        
+        
+        
+        
+        ////////////////////////////////////////////////////////////////
+        
+        String s = "4";
+        
+        int val = Integer.parseInt(s);
+        
+        Matrix temp1 = new Matrix(10,1);
+        
+        temp1.set(val,0,1.0);
+
+        temp1.print(10,1);
+        
+        
+        //////////////////////////////////////////////////////////////////
 
     }
 

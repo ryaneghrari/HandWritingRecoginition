@@ -560,8 +560,14 @@ public class ClassifierWindow extends WindowManager {
      */
     
     private static Matrix vectorizeY(String yValue) {
+        
+        int val = Integer.parseInt(yValue);
+        
+        Matrix temp = new Matrix(10,1);
+        
+        temp.set(val,0,1.0);
 
-        return null;
+        return temp;
     } 
 
     
