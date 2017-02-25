@@ -120,6 +120,9 @@ public class test{
         int min = -1 * epsilon;
         
         double[][] matr = new double[rows][cols];
+        
+        //System.out.println(matr.length);
+        //System.out.println(matr[0].length);
 
         for(int i = 0; i < rows; i++){
             for(int j = 0; j < cols; j++){
@@ -133,9 +136,6 @@ public class test{
         
         Matrix temp3 = new Matrix(matr);
         temp3.print(rows,cols);
-        
-        
-        
         
         
         

@@ -619,6 +619,8 @@ public class ClassifierWindow extends WindowManager {
      * This method takes a double as input, and output the value of the logistic function when applied to x.
      */
     private double logisticFunction(double x) {
+        
+        //apply whatever the logistic function is to x
 
         return 0;
 
@@ -630,8 +632,28 @@ public class ClassifierWindow extends WindowManager {
      */
      
     private Matrix logisticFunction(Matrix x) {
+    
+        double[][] matr = x.getMatrix();
+        
+        int rows = matr.length;
+        int cols = matr[0].length;
+        
+        for(int i = 0; i < rows; i++){
+            for(int j = 0; j < cols; j++){
+                
+                double newVal = logisticFunction( x.get(i,j) );
+               
+                //x.set(i,j,newVal); //or this
+               
+                matr[i][j] = newVal; //or this
+            }
+        }
+        
+        
 
-        return null;
+        //return new matrix
+        Matrix temp = new Matrix(matr);
+        return temp;
     }
 
     
@@ -640,6 +662,12 @@ public class ClassifierWindow extends WindowManager {
      * computes the output vector of the neural network. That is, it performs forward propagation.
      */
     private Matrix computeHypothesis(Matrix input, Matrix theta1, Matrix theta2) {
+        
+        //i think multiple input * theta1
+        //then apply sigmoid function to each value of the output lets call that z1
+        //then multiply z1 * theta2
+        //then apply sigmoid function to each value of the output lets call that z2
+        //then return that matrix;
  
         return null;
 
