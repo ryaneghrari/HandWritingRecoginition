@@ -621,8 +621,9 @@ public class ClassifierWindow extends WindowManager {
     private double logisticFunction(double x) {
         
         //apply whatever the logistic function is to x
+	double result = (1 / (1 + Math.pow(Math.E,(-1*x))));
 
-        return 0;
+        return result;
 
     }
 
@@ -668,7 +669,7 @@ public class ClassifierWindow extends WindowManager {
         //then multiply z1 * theta2
         //then apply sigmoid function to each value of the output lets call that z2
         //then return that matrix;
- 
+ 	
         return null;
 
     }
