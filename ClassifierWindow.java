@@ -20,7 +20,7 @@
  * 
  * 
  * 
- * @author Ryan Eghrari
+ * @authors Alan Malayev, Aidan Winters, Ryan Eghrari, Santiago Espinosa
  * @version Feb 25 2017
  */
 
@@ -85,6 +85,10 @@ public class ClassifierWindow extends WindowManager {
     private double lambda;
     private double alpha;
     private int numIterations;
+    
+    
+    private final boolean DB = true;
+    
 
     private DecimalFormat decimalFormat;
     public ClassifierWindow() {
@@ -221,7 +225,7 @@ public class ClassifierWindow extends WindowManager {
     public void buttonClicked(JButton whichButton) {
         String actionCommand = whichButton.getActionCommand();
         if (actionCommand.equals(trainNetworkButton.getActionCommand())) {
-            
+
             trainMatrix();
 
         } else if (actionCommand.equals(saveThetasButton.getActionCommand())) {
@@ -361,12 +365,11 @@ public class ClassifierWindow extends WindowManager {
                         resultMatrix = computeHypothesis( inputVector, theta[1], theta[2] );
 
                         classifiedOutput = getMax( resultMatrix );
-                        
+
                         if ( classifiedOutput == Integer.parseInt(outputValue)) {
                             ++countCorrect;
                         }
 
-        
                     }     
                     System.out.print("\n" + countCorrect + " vectors out of " + numVectors + "classified correctly!\n");
                     int proportion = (int) (((countCorrect / (double) numVectors) * 100.0) + 0.5);
@@ -387,7 +390,7 @@ public class ClassifierWindow extends WindowManager {
     private void trainMatrix() {
 
         readTrainingData();
-        
+
         /* Rather than just waste all the processing that goes into training a matrix,
          * this method saves the matrices (theta[1] and theta[2]) to a file, so they can be read in 
          * and used again.  I have provided the code that does the reading and writing of matrices.
@@ -428,27 +431,32 @@ public class ClassifierWindow extends WindowManager {
 
     }
 
-    
     /* This method assumes that the input is a column vector (that is, a matrix with only a single
      * row.  It goes through the values in the matrix, and returns the ROW INDEX of the largest entry in the
      * matrix
      */
-    
+
     private int getMax(Matrix m) {
         
-        double[][] temp = m.getArray();
+        if(m.getColumnDimension() != 1){
+            
+            System.err.println("Passed incorrectly sized matrix to getMax(Matrix m)");
+        }
         
         int maxIndex    = 0; 
         double maxVal   = 0.0;
-        
-        //Iterate through vector to find largest int
-        for(int i = 0; i < temp.length; i++){
+
+        for(int i = 0; i < m.getRowDimension(); i++){
+
+            double tempVal = m.get(i,0);
             
-            if(temp[i][0] > maxVal){
-                maxVal = temp[i][0];
+            if(tempVal > maxVal){
+                maxVal = tempVal;
                 maxIndex = i;
             }
         }
+        
+        //Iterate through vector to find largest int
 
         return maxIndex;
 
@@ -468,17 +476,19 @@ public class ClassifierWindow extends WindowManager {
         theta[1] = createInitialTheta(HIDDEN_LAYER_SIZE,INPUT_VECTOR_DIMENSION + 1);
         theta[2] = createInitialTheta(NUM_OUTPUT_CLASSES, HIDDEN_LAYER_SIZE + 1);
 
- 
         return null;
     }
 
-
-    private void readTrainingData() {
+    public void readTrainingData() {
         JFileChooser chooser = new JFileChooser( new File(".") );
         int value = chooser.showOpenDialog( this );
         if (value == JFileChooser.APPROVE_OPTION) {
 
             File file = chooser.getSelectedFile();
+            
+            if(DB){
+                System.out.println("readingTrainingData: " + file);
+            }
 
             try {
                 Scanner scanner = new Scanner(file);
@@ -522,7 +532,7 @@ public class ClassifierWindow extends WindowManager {
 
                     inputValue = parseLine.next().trim();
                     outputValue = parseLine.next().trim();
-                    
+
                     // Make matrices out of these strings
                     /* One note: the method inputStringToMatrix() should NOT add the bias term to the input vector
                      * That is done by the method computeHypothesis().
@@ -530,10 +540,17 @@ public class ClassifierWindow extends WindowManager {
 
                     training[index] = inputStringToMatrix(inputValue);
                     output[index] = vectorizeY(outputValue);
+
                     ++index;
+                    
+                    if(DB){
+                        
+                        System.out.println("Training at " + index + ": " + training[index]);
+                        System.out.println("Output at " + index + ": " + training[index]);
+                        
+                    }
 
                 }
-                
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -558,29 +575,28 @@ public class ClassifierWindow extends WindowManager {
      *     0
      *  
      */
-    
+
     private static Matrix vectorizeY(String yValue) {
-        
+
         int val = Integer.parseInt(yValue);
-        
+
         Matrix temp = new Matrix(10,1);
-        
+
         temp.set(val,0,1.0);
 
         return temp;
     } 
 
-    
     /* This method takes as input a String representing the binary representation of a digit.  Since the String should
      * have length INPUT_VECTOR_DIMENSION, one should end up with a matrix that has dimensions
      * INPUT_VECTROR_DIMENSION x 1.  Note that the 
      * 
      */
     private static Matrix inputStringToMatrix(String input) {
-        
-        Matrix temp = new Matrix(INPUT_VECTROR_DIMENSION,1);
-        
-        for(int i = 0; i < INPUT_VECTROR_DIMENSION; i++){
+
+        Matrix temp = new Matrix(INPUT_VECTOR_DIMENSION,1);
+
+        for(int i = 0; i < INPUT_VECTOR_DIMENSION; i++){
             if(input.charAt(i) == '1'){
                 temp.set(i,0,1.0);
             }
@@ -589,37 +605,33 @@ public class ClassifierWindow extends WindowManager {
         return temp;
     }
 
-    
     /* This method takes as input the size (number of rows and number of cols) of a matrix, and creates a matrix
      * of the given size, which has random entries.  All entries of the matrix should fall between -epsilon and +epsilon,
      * where epsilon is the instance variable of the same name.
      */
     private Matrix createInitialTheta(int rows, int cols) {
-        
-        int max = epsilon;
-        int min = (-1 * epsilon); //negative epsilon
-        
-        double[][] matr = new double[rows][cols];
 
+        double max = epsilon;
+        double min = (-1 * epsilon); //negative epsilon
+        
+        Matrix matr = new Matrix(rows, cols);
+
+        Random rand = new Random();
+        
         for(int i = 0; i < rows; i++){
             for(int j = 0; j < cols; j++){
-                      
-                Random rand = new Random();
-    
-                matr[i][j] = rand.nextDouble() * (max - min) + min;
+                matr.set(i, j, rand.nextDouble() * (max - min) + min);
             }
         }
-        
-        Matrix temp = new Matrix(matr);
-        return temp;
 
+        return matr;
     }
 
     /* 
      * This method takes a double as input, and output the value of the logistic function when applied to x.
      */
     private double logisticFunction(double x) {
-        
+
         //apply whatever the logistic function is to x
 
         return 0;
@@ -630,45 +642,47 @@ public class ClassifierWindow extends WindowManager {
      * This method takes as input column vector, and creates a matrix whose entries are
      * the values of the logistic function performed on the entries of the input matrix.
      */
-     
+
     private Matrix logisticFunction(Matrix x) {
-    
-        double[][] matr = x.getMatrix();
-        
+
+        /*
+        int[][] matr = x.getMatrix();
+
         int rows = matr.length;
         int cols = matr[0].length;
-        
-        for(int i = 0; i < rows; i++){
-            for(int j = 0; j < cols; j++){
-                
-                double newVal = logisticFunction( x.get(i,j) );
-               
-                //x.set(i,j,newVal); //or this
-               
-                matr[i][j] = newVal; //or this
-            }
-        }
-        
-        
 
+        for(int i = 0; i < rows; i++){
+        for(int j = 0; j < cols; j++){
+
+        double newVal = logisticFunction( x.get(i,j) );
+
+        //x.set(i,j,newVal); //or this
+
+        matr[i][j] = newVal; //or this
+        }
+        }
+
+        
         //return new matrix
         Matrix temp = new Matrix(matr);
         return temp;
+         */
+
+        return null;
     }
 
-    
     /* 
      * This method takes as input a single input vector (without bias unit -- you'll need to add that), along with the weight matrices, and
      * computes the output vector of the neural network. That is, it performs forward propagation.
      */
     private Matrix computeHypothesis(Matrix input, Matrix theta1, Matrix theta2) {
-        
+
         //i think multiple input * theta1
         //then apply sigmoid function to each value of the output lets call that z1
         //then multiply z1 * theta2
         //then apply sigmoid function to each value of the output lets call that z2
         //then return that matrix;
- 
+
         return null;
 
     }
@@ -676,7 +690,7 @@ public class ClassifierWindow extends WindowManager {
     /* This is a helper method.  It takes as input a matrix that results from the output of the neural network, and checks
      * that this vector is valid (all entries are between 0 and 1).  You may not need it.  I did.
      */
-    
+
     private boolean validHypothesis(Matrix hypothesis) {
 
         // this method assumes a one dimensional column vector
@@ -711,9 +725,9 @@ public class ClassifierWindow extends WindowManager {
      * as the value of epsilon for gradient approximation purposes.
      */
     private Matrix[] gradientCheck(Matrix[] trainingData, Matrix[] outputData, Matrix[] thetaValues, double lambdaValue) {
-        
+
         return null;
-        
+
     }
 
     /* 
@@ -722,11 +736,11 @@ public class ClassifierWindow extends WindowManager {
      * members do), and the value of lambda.  It returns a double value that represents the value of the cost function J(theta) for
      * this choice of training data, theta values, and lambda.
      */
-    
+
     private double jTheta(Matrix[] trainingData, Matrix[] outputData, Matrix[] thetaValues, double lambdaValue) {
 
         return 0;
-        
+
     }
 
     /* You don't have to code this, but you might find it helpful for computing jTheta.  
@@ -734,9 +748,9 @@ public class ClassifierWindow extends WindowManager {
      * with the exception of the first column of the matrix, which it ignores.
      */
     private double sumSquaredMatrixEntries(Matrix m) {
-        
+
         return 0;
-        
+
     }
 
     /* A helper method.  When debugging, it's sometimes convenient to be able to easily print out the dimensions of 

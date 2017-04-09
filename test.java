@@ -142,7 +142,44 @@ public class test{
         ////////////////////////////////////////////////////////////////////
 
     }
+    
+    public static void aidanTest(){
+        
+        System.out.println("Run Aidan's Test");
+        
+        Matrix m = new Matrix(4,1);
+        
+        if(m.getColumnDimension() != 1){
+            
+            System.err.println("Passed incorrectly sized matrix to getMax(Matrix m)");
+        }
+        
+        System.out.println("Dimensions of Matrix: " + m.getRowDimension() + " * " + m.getColumnDimension() );
+        
+        Matrix temp = createInitialTheta(4,5,5);
+        
+        temp.print(5, 2);
+        
+    }
 
+    public static Matrix createInitialTheta(int rows, int cols, double epsilon) {
+
+        double max = epsilon;
+        double min = (-1 * epsilon); //negative epsilon
+        
+        Matrix matr = new Matrix(rows, cols);
+
+        Random rand = new Random();
+        
+        for(int i = 0; i < rows; i++){
+            for(int j = 0; j < cols; j++){
+                matr.set(i, j, rand.nextDouble() * (max - min) + min);
+            }
+        }
+
+        return matr;
+    }
+    
 }
 
 
