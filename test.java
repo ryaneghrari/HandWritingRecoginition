@@ -120,6 +120,21 @@ public class test{
         */
 
         System.out.println("Santi testing here");
+
+        double val = 0.5;
+
+        Matrix temp = new Matrix(10, 1, val);
+	Matrix temp2 = new Matrix(10, 1, val);
+
+	Matrix multi = temp2.times(temp.transpose());
+	
+	multi.print(1, 3);
+	
+	
+	
+        System.out.println("Logistic of " + val + " is: " + logisticFunction(val));
+
+	
         ////////////////////////////////////////////////////////////////////
 
     }
