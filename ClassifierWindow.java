@@ -85,10 +85,8 @@ public class ClassifierWindow extends WindowManager {
     private double lambda;
     private double alpha;
     private int numIterations;
-    
-    
+
     private final boolean DB = true;
-    
 
     private DecimalFormat decimalFormat;
     public ClassifierWindow() {
@@ -437,25 +435,25 @@ public class ClassifierWindow extends WindowManager {
      */
 
     private int getMax(Matrix m) {
-        
+
         if(m.getColumnDimension() != 1){
-            
+
             System.err.println("Passed incorrectly sized matrix to getMax(Matrix m)");
         }
-        
+
         int maxIndex    = 0; 
         double maxVal   = 0.0;
 
         for(int i = 0; i < m.getRowDimension(); i++){
 
             double tempVal = m.get(i,0);
-            
+
             if(tempVal > maxVal){
                 maxVal = tempVal;
                 maxIndex = i;
             }
         }
-        
+
         //Iterate through vector to find largest int
 
         return maxIndex;
@@ -485,7 +483,7 @@ public class ClassifierWindow extends WindowManager {
         if (value == JFileChooser.APPROVE_OPTION) {
 
             File file = chooser.getSelectedFile();
-            
+
             if(DB){
                 System.out.println("readingTrainingData: " + file);
             }
@@ -542,12 +540,12 @@ public class ClassifierWindow extends WindowManager {
                     output[index] = vectorizeY(outputValue);
 
                     ++index;
-                    
+
                     if(DB){
-                        
+
                         System.out.println("Training at " + index + ": " + training[index]);
                         System.out.println("Output at " + index + ": " + training[index]);
-                        
+
                     }
 
                 }
@@ -613,11 +611,11 @@ public class ClassifierWindow extends WindowManager {
 
         double max = epsilon;
         double min = (-1 * epsilon); //negative epsilon
-        
+
         Matrix matr = new Matrix(rows, cols);
 
         Random rand = new Random();
-        
+
         for(int i = 0; i < rows; i++){
             for(int j = 0; j < cols; j++){
                 matr.set(i, j, rand.nextDouble() * (max - min) + min);
@@ -633,10 +631,9 @@ public class ClassifierWindow extends WindowManager {
     private double logisticFunction(double x) {
 
         //apply whatever the logistic function is to x
-	double result = (1 / (1 + Math.pow(Math.E,(-1*x))));
+        double result = (1 / (1 + Math.pow(Math.E,(-1*x))));
 
         return result;
-
     }
 
     /* 
@@ -646,30 +643,22 @@ public class ClassifierWindow extends WindowManager {
 
     private Matrix logisticFunction(Matrix x) {
 
-        /*
-        int[][] matr = x.getMatrix();
-
-        int rows = matr.length;
-        int cols = matr[0].length;
-
-        for(int i = 0; i < rows; i++){
-        for(int j = 0; j < cols; j++){
-
-        double newVal = logisticFunction( x.get(i,j) );
-
-        //x.set(i,j,newVal); //or this
-
-        matr[i][j] = newVal; //or this
-        }
-        }
-
+        int numRows = x.getRowDimension();
+        int numCols = x.getColumnDimension();
         
-        //return new matrix
-        Matrix temp = new Matrix(matr);
-        return temp;
-         */
+        if( numCols != 1){
+            System.err.println("Passed incorrectly sized matrix to logisticFunction(Matrix m)");
+        }
+        
+        Matrix logMatr = new Matrix(numRows, numCols);
 
-        return null;
+        for(int i = 0; i < numRows; i++){
+                double newVal = logisticFunction( x.get(i,0) );
+
+                logMatr.set(i, 0, newVal); 
+        }
+
+        return logMatr;
     }
 
     /* 
