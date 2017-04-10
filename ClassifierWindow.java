@@ -578,7 +578,7 @@ public class ClassifierWindow extends WindowManager {
 
         int val = Integer.parseInt(yValue);
 
-        Matrix temp = new Matrix(10,1);
+        Matrix temp = new Matrix(NUM_OUTPUT_CLASSES,1);
 
         temp.set(val,0,1.0);
 
@@ -672,7 +672,21 @@ public class ClassifierWindow extends WindowManager {
         //then multiply z1 * theta2
         //then apply sigmoid function to each value of the output lets call that z2
         //then return that matrix;
+        
+        if (input.getColumnDimension() != 1) {
+            System.out.print("Error: input not a column vector!\n");
+            System.exit(1);
+        }
+        
+        if((input.getRowDimension() + 1) != theta1.getColumnDimension()){
+            System.out.print("Innapropriate theta matrix: wrong number of rows");
+            System.exit(1);
+        }
+        
+        //add check to make sure number of rows in theta1 are equal to number of columns in theta2
 
+        
+        
         return null;
 
     }

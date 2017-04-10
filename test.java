@@ -16,6 +16,8 @@ public class test{
     }
 
     public static void main(String[] args){
+        
+        /*
         test t = new test();
         Matrix m = new Matrix(10,1);
         System.out.println(m.get(9,0));
@@ -114,8 +116,10 @@ public class test{
 
         Matrix temp3 = new Matrix(matr);
         temp3.print(rows,cols);
-
         
+        */
+
+        System.out.println("Santi testing here");
         ////////////////////////////////////////////////////////////////////
 
     }
