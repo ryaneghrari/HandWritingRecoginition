@@ -1,10 +1,11 @@
 #BlueJ class context
-comment0.params=
-comment0.target=test()
-comment1.params=m
-comment1.target=int\ getMax(Jama.Matrix)
-comment2.params=args
-comment2.target=void\ main(java.lang.String[])
+comment0.params=m
+comment0.target=int\ getMax(Jama.Matrix)
+comment1.params=args
+comment1.target=void\ main(java.lang.String[])
+comment2.params=input\ theta1\ theta2
+comment2.target=Jama.Matrix\ computeHypothesis(Jama.Matrix,\ Jama.Matrix,\ Jama.Matrix)
+comment2.text=\ \n\ This\ method\ takes\ as\ input\ a\ single\ input\ vector\ (without\ bias\ unit\ --\ you'll\ need\ to\ add\ that),\ along\ with\ the\ weight\ matrices,\ and\n\ computes\ the\ output\ vector\ of\ the\ neural\ network.\ That\ is,\ it\ performs\ forward\ propagation.\n
 comment3.params=
 comment3.target=void\ aidanTest()
 comment4.params=rows\ cols\ epsilon

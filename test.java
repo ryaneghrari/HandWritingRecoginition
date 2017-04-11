@@ -9,8 +9,11 @@ import java.io.*;
 import Jama.Matrix;
 
 public class test{
-    public test(){
-    }
+   
+    private static final int NUM_OUTPUT_CLASSES = 10;
+    private static final int INPUT_VECTOR_DIMENSION = 20;  // The number of input units, not counting the bias unit.
+    private static final int HIDDEN_LAYER_SIZE = 20;
+    
     private int getMax(Matrix m) {
         return 0;
     }
@@ -121,61 +124,28 @@ public class test{
 
 
         System.out.println("Santi testing starts here");
-	
-	
+    
+    
         double val = 0.5;
 
         Matrix temp = new Matrix(9, 1, val);
-	Matrix temp2 = new Matrix(10, 1, 1.0);
-
-	Matrix multi = temp2.arrayTimes(temp); 
-	
-	multi.print(1, 3);
-	
-	
-	
-        System.out.println("Logistic of " + val + " is: " + logisticFunction(val));
-
-	
-
-
-    /* 
-     * This method takes a double as input, and output the value of the logistic function when applied
-     * to x.
-     */
-    private double logisticFunction(double x) {
-
-        //apply whatever the logistic function is to x
-        double result = (1 / (1 + Math.pow(Math.E,(-1*x))));
-
-        return result;
-    }
-
-    /* 
-     * This method takes as input column vector, and creates a matrix whose entries are
-     * the values of the logistic function performed on the entries of the input matrix.
-     */
-
-    private Matrix logisticFunction(Matrix x) {
-
-        int numRows = x.getRowDimension();
-        int numCols = x.getColumnDimension();
+        Matrix temp2 = new Matrix(10, 1, 1.0);
         
-        if( numCols != 1){
-            System.err.println("Passed incorrectly sized matrix to logisticFunction(Matrix m)");
-        }
+        System.out.println("BiasINput before multiply:");
+        temp2.print(1, 1);
+    
+        Matrix multi = temp2.arrayTimes(temp); 
         
-        Matrix logMatr = new Matrix(numRows, numCols);
+        System.out.println("BiasINput before multiply:");
+        multi.print(1, 1);
+   
+        System.out.println("Santi Testing ends here");
 
-        for(int i = 0; i < numRows; i++){
-                double newVal = logisticFunction( x.get(i,0) );
 
-                logMatr.set(i, 0, newVal); 
-        }
+        ////////////////////////////////////////////////////////////////////
 
-        return logMatr;
     }
-
+    
     /* 
      * This method takes as input a single input vector (without bias unit -- you'll need to add that), along with the weight matrices, and
      * computes the output vector of the neural network. That is, it performs forward propagation.
@@ -199,33 +169,30 @@ public class test{
         }
         
         //add check to make sure number of rows in theta1 are equal to number of columns in theta2
-	
-	if((theta1.getRowDimension()) != theta2.getColumnDimension()){
-            System.out.print("Innapropriate theta matrix: theta matrices are not the same size");
-            System.exit(1);
-        }
-	
-	Matrix result1 = new Matrix(HIDDEN_LAYER_SIZE, 1);
-	Matrix result2 = new Matrix(NUM_OUTPUT_CLASSES, 1);
-
-	Matrix BiasInput = new Matrix(HIDDEN_LAYER_SIZE + 1, 1, 1);
-	BiasInput = BiasInput.arrayTimes(input);
-
-	result1 = theta1.times(BiasInput);
-	result1 = result1.logisticFunction(result1);
-
+    
+        if((theta1.getRowDimension()) != theta2.getColumnDimension()){
+                System.out.print("Innapropriate theta matrix: theta matrices are not the same size");
+                System.exit(1);
+            }
         
-        
+            
+            
+        Matrix result1 = new Matrix(HIDDEN_LAYER_SIZE, 1);
+        Matrix result2 = new Matrix(NUM_OUTPUT_CLASSES, 1);
+    
+        Matrix BiasInput = new Matrix(HIDDEN_LAYER_SIZE + 1, 1, 1);
+
+        BiasInput = BiasInput.arrayTimes(input);
+    
+        result1 = theta1.times(BiasInput);
+        result1 = logisticFunction(result1);
+    
+            
+            
         return null;
 
     }
 
-	System.out.println(“Santi Testing ends here”);
-
-
-        ////////////////////////////////////////////////////////////////////
-
-    }
 
     public static void aidanTest(){
         double val = 0.5;
