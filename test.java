@@ -182,9 +182,13 @@ public class test{
     public static void aidanTest(){
         double val = 0.5;
         
-        Matrix testInput = new Matrix(10, 1, 10);
-        Matrix testTheta1 = new Matrix(10, 11, 1);
-        Matrix testTheta2 = new Matrix(3, 11, 1);
+        int numInputs = 4;
+        int numOutputs = 3;
+        int hiddenLayer = 4;
+        
+        Matrix testInput = new Matrix(numInputs, 1, 10);
+        Matrix testTheta1 = new Matrix(hiddenLayer, numInputs + 1, 1);
+        Matrix testTheta2 = new Matrix(numOutputs, hiddenLayer + 1, 1);
 
         computeHypothesis(testInput, testTheta1, testTheta2);
 
