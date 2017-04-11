@@ -122,13 +122,13 @@ public class test{
 
         System.out.println("Santi testing starts here");
 	
-	/*
+	
         double val = 0.5;
 
-        Matrix temp = new Matrix(10, 1, val);
-	Matrix temp2 = new Matrix(10, 1, val);
+        Matrix temp = new Matrix(9, 1, val);
+	Matrix temp2 = new Matrix(10, 1, 1.0);
 
-	Matrix multi = temp2.times(temp.transpose());
+	Matrix multi = temp2.arrayTimes(temp); 
 	
 	multi.print(1, 3);
 	
@@ -136,7 +136,7 @@ public class test{
 	
         System.out.println("Logistic of " + val + " is: " + logisticFunction(val));
 
-	*/
+	
 
 
     /* 
@@ -219,7 +219,6 @@ public class test{
         return null;
 
     }
-
 
 	System.out.println(“Santi Testing ends here”);
 
