@@ -690,6 +690,28 @@ public class ClassifierWindow extends WindowManager {
         return null;
 
     }
+    
+    private Matrix addBiasUnit(Matrix inputs, double biasVal){
+        
+        if (inputs.getColumnDimension() != 1) {
+            System.out.print("Error: input not a column vector!\n");
+            System.exit(1);
+        }
+        
+        int numRows = inputs.getRowDimension();
+        
+        System.out.println("Num rows: " + numRows);
+        
+        Matrix mWithBias = new Matrix(numRows, 1, biasVal);
+        
+        for(int i = 1; i < numRows; i++){
+            
+            mWithBias.set(i, 0, inputs.get(i, 0));
+            
+        }
+        
+        return mWithBias;
+    }
 
     /* This is a helper method.  It takes as input a matrix that results from the output of the neural network, and checks
      * that this vector is valid (all entries are between 0 and 1).  You may not need it.  I did.

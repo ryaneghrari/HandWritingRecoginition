@@ -122,26 +122,6 @@ public class test{
         
         */
 
-
-        System.out.println("Santi testing starts here");
-    
-    
-        double val = 0.5;
-
-        Matrix temp = new Matrix(9, 1, val);
-        Matrix temp2 = new Matrix(10, 1, 1.0);
-        
-        System.out.println("BiasINput before multiply:");
-        temp2.print(1, 1);
-    
-        Matrix multi = temp2.arrayTimes(temp); 
-        
-        System.out.println("BiasINput before multiply:");
-        multi.print(1, 1);
-   
-        System.out.println("Santi Testing ends here");
-
-
         ////////////////////////////////////////////////////////////////////
 
     }
@@ -150,8 +130,17 @@ public class test{
      * This method takes as input a single input vector (without bias unit -- you'll need to add that), along with the weight matrices, and
      * computes the output vector of the neural network. That is, it performs forward propagation.
      */
-    private Matrix computeHypothesis(Matrix input, Matrix theta1, Matrix theta2) {
+    private static Matrix computeHypothesis(Matrix input, Matrix theta1, Matrix theta2){
 
+        System.out.println("Computing Hypothesis...");
+        
+        System.out.println("-----------------------");
+        
+        
+        System.out.println("input: " + input.getRowDimension() + " x " + input.getColumnDimension());
+        System.out.println("theta1: " + theta1.getRowDimension() + " x " + theta1.getColumnDimension());
+        System.out.println("theta2: " + theta2.getRowDimension() + " x " + theta2.getColumnDimension());
+        
         //i think multiple input * theta1
         //then apply sigmoid function to each value of the output lets call that z1
         //then multiply z1 * theta2
@@ -159,36 +148,32 @@ public class test{
         //then return that matrix;
         
         if (input.getColumnDimension() != 1) {
-            System.out.print("Error: input not a column vector!\n");
-            System.exit(1);
+            System.err.println("Error: input not a column vector!\n");
+            //System.exit(1);
         }
         
         if((input.getRowDimension() + 1) != theta1.getColumnDimension()){
-            System.out.print("Innapropriate theta matrix: wrong number of rows");
-            System.exit(1);
+            System.err.println("Innapropriate theta matrix: wrong number of rows");
+            //System.exit(1);
         }
         
         //add check to make sure number of rows in theta1 are equal to number of columns in theta2
     
-        if((theta1.getRowDimension()) != theta2.getColumnDimension()){
-                System.out.print("Innapropriate theta matrix: theta matrices are not the same size");
-                System.exit(1);
+        if((theta1.getRowDimension() + 1) != (theta2.getColumnDimension())){
+                System.err.println("Innapropriate theta matrix: theta matrices are not the same size");
+                //System.exit(1);
             }
         
+        double biasVal = 1.0;
             
-            
-        Matrix result1 = new Matrix(HIDDEN_LAYER_SIZE, 1);
-        Matrix result2 = new Matrix(NUM_OUTPUT_CLASSES, 1);
-    
-        Matrix BiasInput = new Matrix(HIDDEN_LAYER_SIZE + 1, 1, 1);
-
-        BiasInput = BiasInput.arrayTimes(input);
-    
-        result1 = theta1.times(BiasInput);
-        result1 = logisticFunction(result1);
-    
-            
-            
+        Matrix inputWithBias = addBiasUnit(input, biasVal);  
+        
+        System.out.println("inputWithBias: " + inputWithBias.getRowDimension() + " x " + inputWithBias.getColumnDimension());
+        
+        Matrix result1 = theta1.times(inputWithBias);
+        
+        result1.print(1, 3);
+   
         return null;
 
     }
@@ -196,14 +181,12 @@ public class test{
 
     public static void aidanTest(){
         double val = 0.5;
+        
+        Matrix testInput = new Matrix(10, 1, 10);
+        Matrix testTheta1 = new Matrix(10, 11, 1);
+        Matrix testTheta2 = new Matrix(3, 11, 1);
 
-        Matrix temp = new Matrix(10, 1, val);
-
-        System.out.println("Logistic of " + val + " is: " + logisticFunction(val));
-
-        Matrix logTemp = logisticFunction(temp);
-
-        logTemp.print(1, 3);
+        computeHypothesis(testInput, testTheta1, testTheta2);
 
     }
 
@@ -250,5 +233,27 @@ public class test{
             logMatr.set(i, 0, newVal); 
         }
         return logMatr;
+    }
+    
+    private static Matrix addBiasUnit(Matrix inputs, double biasVal){
+        
+        if (inputs.getColumnDimension() != 1) {
+            System.out.print("Error: input not a column vector!\n");
+            System.exit(1);
+        }
+        
+        int numRows = inputs.getRowDimension();
+        
+        System.out.println("Num rows: " + numRows);
+        
+        Matrix mWithBias = new Matrix(numRows + 1, 1, biasVal);
+        
+        for(int i = 1; i < numRows; i++){
+            
+            mWithBias.set(i, 0, inputs.get(i, 0));
+            
+        }
+        
+        return mWithBias;
     }
 }
