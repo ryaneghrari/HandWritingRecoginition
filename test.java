@@ -168,14 +168,17 @@ public class test{
             
         Matrix inputWithBias = addBiasUnit(input, biasVal);  
         
-        System.out.println("inputWithBias: " + inputWithBias.getRowDimension() + " x " + inputWithBias.getColumnDimension());
+        //System.out.println("inputWithBias: " + inputWithBias.getRowDimension() + " x " + inputWithBias.getColumnDimension());
         
-        Matrix result1 = theta1.times(inputWithBias);
+        Matrix result1 = logisticFunction(theta1.times(inputWithBias));
         
-        result1.print(1, 3);
+        Matrix result1WithBias = addBiasUnit(result1, biasVal);
+        
+        Matrix output = logisticFunction(theta2.times(result1WithBias));
+        
+        output.print(1, 3);
    
-        return null;
-
+        return output;
     }
 
 
@@ -183,14 +186,16 @@ public class test{
         double val = 0.5;
         
         int numInputs = 4;
-        int numOutputs = 3;
+        int numOutputs = 4;
         int hiddenLayer = 4;
         
-        Matrix testInput = new Matrix(numInputs, 1, 10);
+        Matrix testInput = new Matrix(numInputs, 1, 1);
         Matrix testTheta1 = new Matrix(hiddenLayer, numInputs + 1, 1);
         Matrix testTheta2 = new Matrix(numOutputs, hiddenLayer + 1, 1);
 
-        computeHypothesis(testInput, testTheta1, testTheta2);
+        Matrix finalOutput = computeHypothesis(testInput, testTheta1, testTheta2);
+        
+        finalOutput.print(1, 3);
 
     }
 
@@ -252,9 +257,9 @@ public class test{
         
         Matrix mWithBias = new Matrix(numRows + 1, 1, biasVal);
         
-        for(int i = 1; i < numRows; i++){
+        for(int i = 1; i < numRows + 1; i++){
             
-            mWithBias.set(i, 0, inputs.get(i, 0));
+            mWithBias.set(i, 0, inputs.get(i - 1, 0));
             
         }
         
