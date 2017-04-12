@@ -19,7 +19,7 @@ public class test{
     }
 
     public static void main(String[] args){
-        
+
         /*
         test t = new test();
         Matrix m = new Matrix(10,1);
@@ -126,6 +126,35 @@ public class test{
 
     }
     
+    private static double jTheta(Matrix[] trainingData, Matrix[] outputData, Matrix[] thetaValues, double lambdaValue) {
+        
+        int n = trainingData.length;
+        
+        double sum = 0.0;
+        
+        for(int m = 1; m < n; m++){
+            
+            Matrix hypot = computeHypothesis(trainingData[m], thetaValues[0], thetaValues[1]);
+            
+            for(int k = 1; k < n; k++ ){
+                
+                
+                if(outputData[m].get(k,0) == 1){
+                    sum += Math.log(hypot.get(k,0));
+                }
+                else if(outputData[m].get(k,0) == 0){
+                    sum += Math.log(1 - hypot.get(k,0));
+                }
+                else{
+                    System.err.print("Unsxpected non binary numeral in the output matrix");
+                }
+            }
+        }
+
+        return sum;
+
+    }
+    
     /* 
      * This method takes as input a single input vector (without bias unit -- you'll need to add that), along with the weight matrices, and
      * computes the output vector of the neural network. That is, it performs forward propagation.
@@ -180,6 +209,8 @@ public class test{
    
         return output;
     }
+    
+    
 
 
     public static void aidanTest(){

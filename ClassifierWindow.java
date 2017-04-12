@@ -474,6 +474,7 @@ public class ClassifierWindow extends WindowManager {
         theta[1] = createInitialTheta(HIDDEN_LAYER_SIZE,INPUT_VECTOR_DIMENSION + 1);
         theta[2] = createInitialTheta(NUM_OUTPUT_CLASSES, HIDDEN_LAYER_SIZE + 1);
 
+
         return null;
     }
 
@@ -764,8 +765,37 @@ public class ClassifierWindow extends WindowManager {
      */
 
     private double jTheta(Matrix[] trainingData, Matrix[] outputData, Matrix[] thetaValues, double lambdaValue) {
+        
+        int n = trainingData.length;
+        
+        double sum = 0.0;
+        
+        for(int m = 1; m < n; m++){
+            
+            Matrix hypot = computeHypothesis(trainingData[m], thetaValues[0], thetaValues[1]);
+            
+            for(int k = 1; k < n; k++ ){
+                
+                
+                if(outputData[m].get(k,0) == 1){
+                    sum += Math.log(hypot.get(k,0));
+                }
+                else if(outputData[m].get(k,0) == 0){
+                    sum += Math.log(1 - hypot.get(k,0));
+                }
+                else{
+                    System.err.print("Unsxpected non binary numeral in the output matrix");
+                }
+            }
+        }
+        
+        double regterm = 0.0;
+        
+        for(int i = 0; i < thetaValues.length; i++){
+            regterm += sumSquaredMatrixEntries(thetaValues[i]);
+        }
 
-        return 0;
+        return ((sum / -n) + regterm);
 
     }
 
@@ -775,7 +805,17 @@ public class ClassifierWindow extends WindowManager {
      */
     private double sumSquaredMatrixEntries(Matrix m) {
 
-        return 0;
+        double sum = 0.0;
+        
+        for(int i = 0; i < m.getRowDimension(); i++){
+            for(int j = 0; j < m.getColumnDimension(); j++){
+                
+                sum += (m.get(i,j) * m.get(i,j));
+                
+            }
+        }
+        
+        return sum;
 
     }
 
