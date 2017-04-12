@@ -426,7 +426,6 @@ public class ClassifierWindow extends WindowManager {
         theta[2].print(outputFile, decimalFormat, 22);
 
         outputFile.close();
-
     }
 
     /* This method assumes that the input is a column vector (that is, a matrix with only a single
@@ -457,7 +456,6 @@ public class ClassifierWindow extends WindowManager {
         //Iterate through vector to find largest int
 
         return maxIndex;
-
     }
 
     /* 
@@ -574,7 +572,6 @@ public class ClassifierWindow extends WindowManager {
      *     0
      *  
      */
-
     private static Matrix vectorizeY(String yValue) {
 
         int val = Integer.parseInt(yValue);
@@ -675,21 +672,33 @@ public class ClassifierWindow extends WindowManager {
         //then return that matrix;
         
         if (input.getColumnDimension() != 1) {
-            System.out.print("Error: input not a column vector!\n");
-            System.exit(1);
+            System.err.println("Error: input not a column vector!\n");
+            //System.exit(1);
         }
         
         if((input.getRowDimension() + 1) != theta1.getColumnDimension()){
-            System.out.print("Innapropriate theta matrix: wrong number of rows");
-            System.exit(1);
+            System.err.println("Innapropriate theta matrix: wrong number of rows");
+            //System.exit(1);
         }
         
         //add check to make sure number of rows in theta1 are equal to number of columns in theta2
-
+    
+        if((theta1.getRowDimension() + 1) != (theta2.getColumnDimension())){
+                System.err.println("Innapropriate theta matrix: theta matrices are not the same size");
+                //System.exit(1);
+            }
         
+        double biasVal = 1.0;
+            
+        Matrix inputWithBias = addBiasUnit(input, biasVal);  
+ 
+        Matrix result1 = logisticFunction(theta1.times(inputWithBias));
         
-        return null;
-
+        Matrix result1WithBias = addBiasUnit(result1, biasVal);
+        
+        Matrix output = logisticFunction(theta2.times(result1WithBias));
+   
+        return output;
     }
     
     private Matrix addBiasUnit(Matrix inputs, double biasVal){
@@ -740,7 +749,6 @@ public class ClassifierWindow extends WindowManager {
         }
 
         return true;
-
     }
 
     /* This method takes as input an array of matrices that represent the input training data, an array of matrices that represent
@@ -753,8 +761,11 @@ public class ClassifierWindow extends WindowManager {
      */
     private Matrix[] gradientCheck(Matrix[] trainingData, Matrix[] outputData, Matrix[] thetaValues, double lambdaValue) {
 
+        
+        
+        
+        
         return null;
-
     }
 
     /* 
@@ -765,26 +776,36 @@ public class ClassifierWindow extends WindowManager {
      */
 
     private double jTheta(Matrix[] trainingData, Matrix[] outputData, Matrix[] thetaValues, double lambdaValue) {
-        
+
         int n = trainingData.length;
+        
+        if(n != outputData.length){
+            System.err.println("Incorrect number of output data and training data");
+            System.exit(1);
+        }
         
         double sum = 0.0;
         
-        for(int m = 1; m < n; m++){
+        for(int m = 0; m < n; m++){
             
             Matrix hypot = computeHypothesis(trainingData[m], thetaValues[0], thetaValues[1]);
             
-            for(int k = 1; k < n; k++ ){
-                
-                
-                if(outputData[m].get(k,0) == 1){
+            Matrix currOutput = outputData[m];
+            
+            if(currOutput.getColumnDimension() != 1){
+                System.err.println("Output data set: " + m + " was not a column vector");
+                System.exit(1);
+            }
+            
+            for(int k = 0; k < currOutput.getRowDimension(); k++ ){
+                if(currOutput.get(k,0) == 1){
                     sum += Math.log(hypot.get(k,0));
                 }
-                else if(outputData[m].get(k,0) == 0){
+                else if(currOutput.get(k,0) == 0){
                     sum += Math.log(1 - hypot.get(k,0));
                 }
                 else{
-                    System.err.print("Unsxpected non binary numeral in the output matrix");
+                    System.err.print("Unexpected non binary numeral in the output matrix");
                 }
             }
         }
@@ -796,7 +817,6 @@ public class ClassifierWindow extends WindowManager {
         }
 
         return ((sum / -n) + regterm);
-
     }
 
     /* You don't have to code this, but you might find it helpful for computing jTheta.  
@@ -816,7 +836,6 @@ public class ClassifierWindow extends WindowManager {
         }
         
         return sum;
-
     }
 
     /* A helper method.  When debugging, it's sometimes convenient to be able to easily print out the dimensions of 

@@ -130,29 +130,44 @@ public class test{
         
         int n = trainingData.length;
         
+        if(n != outputData.length){
+            System.err.println("Incorrect number of output data and training data");
+            System.exit(1);
+        }
+        
         double sum = 0.0;
         
-        for(int m = 1; m < n; m++){
+        for(int m = 0; m < n; m++){
             
             Matrix hypot = computeHypothesis(trainingData[m], thetaValues[0], thetaValues[1]);
             
-            for(int k = 1; k < n; k++ ){
-                
-                
-                if(outputData[m].get(k,0) == 1){
+            Matrix currOutput = outputData[m];
+            
+            if(currOutput.getColumnDimension() != 1){
+                System.err.println("Output data set: " + m + " was not a column vector");
+                System.exit(1);
+            }
+            
+            for(int k = 0; k < currOutput.getRowDimension(); k++ ){
+                if(currOutput.get(k,0) == 1){
                     sum += Math.log(hypot.get(k,0));
                 }
-                else if(outputData[m].get(k,0) == 0){
+                else if(currOutput.get(k,0) == 0){
                     sum += Math.log(1 - hypot.get(k,0));
                 }
                 else{
-                    System.err.print("Unsxpected non binary numeral in the output matrix");
+                    System.err.print("Unexpected non binary numeral in the output matrix");
                 }
             }
         }
+        
+        double regterm = 0.0;
+        
+        for(int i = 0; i < thetaValues.length; i++){
+            regterm += sumSquaredMatrixEntries(thetaValues[i]);
+        }
 
-        return sum;
-
+        return ((sum / -n) + regterm);
     }
     
     /* 
@@ -161,15 +176,6 @@ public class test{
      */
     private static Matrix computeHypothesis(Matrix input, Matrix theta1, Matrix theta2){
 
-        System.out.println("Computing Hypothesis...");
-        
-        System.out.println("-----------------------");
-        
-        
-        System.out.println("input: " + input.getRowDimension() + " x " + input.getColumnDimension());
-        System.out.println("theta1: " + theta1.getRowDimension() + " x " + theta1.getColumnDimension());
-        System.out.println("theta2: " + theta2.getRowDimension() + " x " + theta2.getColumnDimension());
-        
         //i think multiple input * theta1
         //then apply sigmoid function to each value of the output lets call that z1
         //then multiply z1 * theta2
@@ -196,30 +202,26 @@ public class test{
         double biasVal = 1.0;
             
         Matrix inputWithBias = addBiasUnit(input, biasVal);  
-        
-        //System.out.println("inputWithBias: " + inputWithBias.getRowDimension() + " x " + inputWithBias.getColumnDimension());
-        
+ 
         Matrix result1 = logisticFunction(theta1.times(inputWithBias));
         
         Matrix result1WithBias = addBiasUnit(result1, biasVal);
         
         Matrix output = logisticFunction(theta2.times(result1WithBias));
-        
-        output.print(1, 3);
    
         return output;
     }
     
-    
-
-
     public static void aidanTest(){
+        
         double val = 0.5;
         
         int numInputs = 4;
         int numOutputs = 4;
         int hiddenLayer = 4;
         
+        
+        /*
         Matrix testInput = new Matrix(numInputs, 1, 1);
         Matrix testTheta1 = new Matrix(hiddenLayer, numInputs + 1, 1);
         Matrix testTheta2 = new Matrix(numOutputs, hiddenLayer + 1, 1);
@@ -227,7 +229,34 @@ public class test{
         Matrix finalOutput = computeHypothesis(testInput, testTheta1, testTheta2);
         
         finalOutput.print(1, 3);
+        */
+       
+       
+        /*
+        Matrix testSumSquare = new Matrix(4,4, 2);
+        
+        System.out.println(sumSquaredMatrixEntries(testSumSquare));
+        */
 
+    }
+    
+        /* You don't have to code this, but you might find it helpful for computing jTheta.  
+     * It takes as input a matrix.  It computes the sum of the squares of each matrix entry,
+     * with the exception of the first column of the matrix, which it ignores.
+     */
+    private static double sumSquaredMatrixEntries(Matrix m) {
+
+        double sum = 0.0;
+        
+        for(int i = 0; i < m.getRowDimension(); i++){
+            for(int j = 0; j < m.getColumnDimension(); j++){
+                
+                sum += (m.get(i,j) * m.get(i,j));
+                
+            }
+        }
+        
+        return sum;
     }
 
     public static Matrix createInitialTheta(int rows, int cols, double epsilon) {
