@@ -763,26 +763,68 @@ public class ClassifierWindow extends WindowManager {
 
         
  	Matrix[] gradCheck = new Matrix[3];
-
-	Matrix gradApprox1 = new Matrix(thetaValues.length(), 1); 
-	Matrix gradApprox2 = new Matrix(thetaValues.length(), 1);
-
-	for(int i = 0; i < thetaValues.length(); i++){
-		Matrix thetaPlus = new Matrix(thetaValues.length(), 1);
-
-		thetaPlus = thetaValues[1];
-		thetaPlus[i, 1] = thetaPlus[i, 1] + GRADIENT_CHECKING_EPSILON;
 		
-		Matrix thetaMinus = new Matrix(thetaValues.length(), 1);
+	int theta1Rows = thetaValues[1].getRowDimention();
+	int theta1Cols = thetaValues[1].getColumnDimension();
 
-		thetaMinus = thetaValues[1];
-		thetaMinus[i, 1] = thetaMinus[i, 1] - GRADIENT_CHECKING_EPSILON;
+	int theta2Rows = thetaValues[2].getRowDimention();
+	int theta2Cols = thetaValues[2].getColumnDimension();	
 
-		gradApprox1[i, 1] = jTheta(trainingData, outputData, thetaPlus
-		
+        Matrix gradApprox1 = new Matrix(theta1Cols, 1); 
+	Matrix gradApprox2 = new Matrix(theta2Cols, 1);
+
+	for(int c  = 0; c < theta1Rows; c++){
+		for(int r = 0; i < theta1Rows; r++){
+			
+			Matrix[] thetaValAdj = thetaValues;			
+
+			Matrix thetaPlus = new Matrix(theta1Rows, theta1Cols);
+			thetaPlus = thetaValues[1];
+			thetaPlus[r, c] = thetaPlus[r, c] + GRADIENT_CHECKING_EPSILON;
+			thetaValAdj[1] = thetaPlus;			
+
+			double thetaPlusCost = jTheta(trainingData, outputData, thetaValAdj, lambdaValue); 
+
+			Matrix thetaMinus = new Matrix(theta1Rows, theta1Cols);
+			thetaMinus = thetaValues[1];
+			thetaMinus[r, c] = thetaMinus[r, c] - GRADIENT_CHECKING_EPSILON;
+			thetaValAdj[1] = thetaMinus;
+
+			double thetaMinusCost = jTheta(trainingData, outputData, thetaValAdj, lambdaValue);
+
+			gradApprox1[c] = ((thetaPlusCost - thetaMinusCost) / (2*(GRADIENT_CHECKING_EPSILON)));
+		}		
 	}
         
-        return null;
+	gradCheck[1] = gradApprox1;
+
+	for(int c  = 0; c < theta2Rows; c++){
+		for(int r = 0; i < theta2Rows; r++){
+			
+			Matrix[] thetaValAdj = thetaValues;			
+
+			Matrix thetaPlus = new Matrix(theta2Rows, theta2Cols);
+			thetaPlus = thetaValues[2];
+			thetaPlus[r, c] = thetaPlus[r, c] + GRADIENT_CHECKING_EPSILON;
+			thetaValAdj[2] = thetaPlus;			
+
+			double thetaPlusCost = jTheta(trainingData, outputData, thetaValAdj, lambdaValue); 
+
+			Matrix thetaMinus = new Matrix(theta2Rows, theta2Cols);
+			thetaMinus = thetaValues[2];
+			thetaMinus[r, c] = thetaMinus[r, c] - GRADIENT_CHECKING_EPSILON;
+			thetaValAdj[2] = thetaMinus;
+
+			double thetaMinusCost = jTheta(trainingData, outputData, thetaValAdj, lambdaValue);
+
+			gradApprox1[c] = ((thetaPlusCost - thetaMinusCost) / (2*(GRADIENT_CHECKING_EPSILON)));
+		}		
+	}
+        
+
+	gradCheck[2] = gradApprox2;
+
+        return gradCheck;
     }
 
     /* 
