@@ -762,12 +762,74 @@ public class ClassifierWindow extends WindowManager {
     private Matrix[] gradientCheck(Matrix[] trainingData, Matrix[] outputData, Matrix[] thetaValues, double lambdaValue) {
 
         
-        
-        
+ 	Matrix[] gradCheck = new Matrix[3];
+
+	Matrix gradApprox1 = new Matrix(thetaValues.length(), 1); 
+	Matrix gradApprox2 = new Matrix(thetaValues.length(), 1);
+
+	for(int i = 0; i < thetaValues.length(); i++){
+		Matrix thetaPlus = new Matrix(thetaValues.length(), 1);
+
+		thetaPlus = thetaValues[1];
+		thetaPlus[i, 1] = thetaPlus[i, 1] + GRADIENT_CHECKING_EPSILON;
+		
+		Matrix thetaMinus = new Matrix(thetaValues.length(), 1);
+
+		thetaMinus = thetaValues[1];
+		thetaMinus[i, 1] = thetaMinus[i, 1] - GRADIENT_CHECKING_EPSILON;
+
+		gradApprox1[i, 1] = jTheta(trainingData, outputData, thetaPlus
+		
+	}
         
         return null;
     }
 
+    /* 
+     * This method takes as input an array of matrices that represent the input training data, an array of matrices that represent
+     * the corresponding output data, an array of matrices that represent the weight matrices (well, the [1] and [2] index 
+     * members do), and the value of lambda.  It returns a double value that represents the value of the cost function J(theta) for
+     * this choice of training data, theta values, and lambda.
+     */
+
+    private double jTheta(Matrix[] trainingData, Matrix[] outputData, Matrix[] thetaValues, double lambdaValue) {
+
+        int n = trainingData.length;
+        
+        if(n != outputData.length){
+            System.err.println("Incorrect number of output data and training data");
+            System.exit(1);
+        }
+        
+        double sum = 0.0;
+        
+        for(int m = 0; m < n; m++){
+            
+            Matrix hypot = computeHypothesis(trainingData[m], thetaValues[0], thetaValues[1]);
+            
+            Matrix currOutput = outputData[m];
+            
+            if(currOutput.getColumnDimension() != 1){
+                System.err.println("Output data set: " + m + " was not a column vector");
+                System.exit(1);
+            }
+            
+            System.exit(1);
+        }
+        
+        double sum = 0.0;
+        
+        for(int m = 0; m < n; m++){
+            
+            Matrix hypot = computeHypothesis(trainingData[m], thetaValues[0], thetaValues[1]);
+            
+            Matrix currOutput = outputData[m];
+            
+            if(currOutput.getColumnDimension() != 1){
+                System.err.println("Output data set: " + m + " was not a column vector");
+                System.exit(1);
+            }
+            
     /* 
      * This method takes as input an array of matrices that represent the input training data, an array of matrices that represent
      * the corresponding output data, an array of matrices that represent the weight matrices (well, the [1] and [2] index 
@@ -940,48 +1002,3 @@ public class ClassifierWindow extends WindowManager {
                 digit = s;
                 digitSelected = true;
             } else {
-                return;
-            }
-
-        }
-        JFileChooser chooser = new JFileChooser( new File(".") );
-        int value = chooser.showSaveDialog( this );
-        if (value == JFileChooser.APPROVE_OPTION)
-        {
-            File file = chooser.getSelectedFile();
-            try
-            {
-                PrintWriter outputFile = new PrintWriter( new BufferedWriter( new FileWriter( file.getName(), true )));
-                String imageVector = "\n";
-
-                for (int i = 0; i < myColorBoxes.length; i++)
-                {
-                    for (int j = 0; j < myColorBoxes[i].length; j++)
-                    {
-                        Color color = myColorBoxes[i][j].getBackground();
-                        imageVector = imageVector + getColorChar(color);
-                    }
-
-                }
-                imageVector = imageVector + ":" + digit;
-                outputFile.write(imageVector);
-                outputFile.write("\n\n");
-                outputFile.close();
-            }
-            catch (FileNotFoundException e)
-            {
-                e.printStackTrace();
-            }
-            catch (IOException e) 
-            {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    public void selectionMade( JComboBox whichComboBox )
-    {
-        digit = ((String) whichComboBox.getSelectedItem()).trim();
-        digitSelected = true;
-    }
-}
