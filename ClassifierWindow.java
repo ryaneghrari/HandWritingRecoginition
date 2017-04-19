@@ -764,14 +764,14 @@ public class ClassifierWindow extends WindowManager {
         
  	Matrix[] gradCheck = new Matrix[3];
 		
-	int theta1Rows = thetaValues[1].getRowDimention();
+	int theta1Rows = thetaValues[1].getRowDimension();
 	int theta1Cols = thetaValues[1].getColumnDimension();
 
-	int theta2Rows = thetaValues[2].getRowDimention();
+	int theta2Rows = thetaValues[2].getRowDimension();
 	int theta2Cols = thetaValues[2].getColumnDimension();	
 
-        Matrix gradApprox1 = new Matrix(theta1Cols, 1); 
-	Matrix gradApprox2 = new Matrix(theta2Cols, 1);
+        Matrix gradApprox1 = new Matrix(theta1Rows, theta1Cols); 
+	Matrix gradApprox2 = new Matrix(theta2Rows, theta2Cols);
 
 	for(int r  = 0; r < theta1Rows; r++){
 		for(int c = 0; c < theta1Cols; c++){
@@ -780,19 +780,19 @@ public class ClassifierWindow extends WindowManager {
 
 			Matrix thetaPlus = new Matrix(theta1Rows, theta1Cols);
 			thetaPlus = thetaValues[1];
-			thetaPlus[r, c] = thetaPlus[r, c] + GRADIENT_CHECKING_EPSILON;
+			thetaPlus.set(r, c, thetaPlus.get(r, c) + GRADIENT_CHECKING_EPSILON);
 			thetaValAdj[1] = thetaPlus;			
 
 			double thetaPlusCost = jTheta(trainingData, outputData, thetaValAdj, lambdaValue); 
 
 			Matrix thetaMinus = new Matrix(theta1Rows, theta1Cols);
 			thetaMinus = thetaValues[1];
-			thetaMinus[r, c] = thetaMinus[r, c] - GRADIENT_CHECKING_EPSILON;
+			thetaMinus.set(r, c, thetaMinus.get(r, c) - GRADIENT_CHECKING_EPSILON);
 			thetaValAdj[1] = thetaMinus;
 
 			double thetaMinusCost = jTheta(trainingData, outputData, thetaValAdj, lambdaValue);
 
-			gradApprox1[c] = ((thetaPlusCost - thetaMinusCost) / (2*(GRADIENT_CHECKING_EPSILON)));
+			gradApprox1.set(r, c, ((thetaPlusCost - thetaMinusCost) / (2*(GRADIENT_CHECKING_EPSILON))));
 		}		
 	}
         
@@ -805,19 +805,19 @@ public class ClassifierWindow extends WindowManager {
 
 			Matrix thetaPlus = new Matrix(theta2Rows, theta2Cols);
 			thetaPlus = thetaValues[2];
-			thetaPlus[r, c] = thetaPlus[r, c] + GRADIENT_CHECKING_EPSILON;
+			thetaPlus.set(r, c, thetaPlus.get(r, c) + GRADIENT_CHECKING_EPSILON);
 			thetaValAdj[2] = thetaPlus;			
 
 			double thetaPlusCost = jTheta(trainingData, outputData, thetaValAdj, lambdaValue); 
 
 			Matrix thetaMinus = new Matrix(theta2Rows, theta2Cols);
 			thetaMinus = thetaValues[2];
-			thetaMinus[r, c] = thetaMinus[r, c] - GRADIENT_CHECKING_EPSILON;
+			thetaMinus.set(r, c, thetaMinus.get(r, c) - GRADIENT_CHECKING_EPSILON);
 			thetaValAdj[2] = thetaMinus;
 
 			double thetaMinusCost = jTheta(trainingData, outputData, thetaValAdj, lambdaValue);
 
-			gradApprox1[c] = ((thetaPlusCost - thetaMinusCost) / (2*(GRADIENT_CHECKING_EPSILON)));
+			gradApprox1.set(r, c, ((thetaPlusCost - thetaMinusCost) / (2*(GRADIENT_CHECKING_EPSILON))));
 		}		
 	}
         
@@ -859,8 +859,6 @@ public class ClassifierWindow extends WindowManager {
             System.exit(1);
         }
         
-        double sum = 0.0;
-        
         for(int m = 0; m < n; m++){
             
             Matrix hypot = computeHypothesis(trainingData[m], thetaValues[0], thetaValues[1]);
@@ -871,58 +869,10 @@ public class ClassifierWindow extends WindowManager {
                 System.err.println("Output data set: " + m + " was not a column vector");
                 System.exit(1);
             }
-            
-    /* 
-     * This method takes as input an array of matrices that represent the input training data, an array of matrices that represent
-     * the corresponding output data, an array of matrices that represent the weight matrices (well, the [1] and [2] index 
-     * members do), and the value of lambda.  It returns a double value that represents the value of the cost function J(theta) for
-     * this choice of training data, theta values, and lambda.
-     */
+	}
 
-    private double jTheta(Matrix[] trainingData, Matrix[] outputData, Matrix[] thetaValues, double lambdaValue) {
-
-        int n = trainingData.length;
-        
-        if(n != outputData.length){
-            System.err.println("Incorrect number of output data and training data");
-            System.exit(1);
-        }
-        
-        double sum = 0.0;
-        
-        for(int m = 0; m < n; m++){
-            
-            Matrix hypot = computeHypothesis(trainingData[m], thetaValues[0], thetaValues[1]);
-            
-            Matrix currOutput = outputData[m];
-            
-            if(currOutput.getColumnDimension() != 1){
-                System.err.println("Output data set: " + m + " was not a column vector");
-                System.exit(1);
-            }
-            
-            for(int k = 0; k < currOutput.getRowDimension(); k++ ){
-                if(currOutput.get(k,0) == 1){
-                    sum += Math.log(hypot.get(k,0));
-                }
-                else if(currOutput.get(k,0) == 0){
-                    sum += Math.log(1 - hypot.get(k,0));
-                }
-                else{
-                    System.err.print("Unexpected non binary numeral in the output matrix");
-                }
-            }
-        }
-        
-        double regterm = 0.0;
-        
-        for(int i = 0; i < thetaValues.length; i++){
-            regterm += sumSquaredMatrixEntries(thetaValues[i]);
-        }
-
-        return ((sum / -n) + regterm);
+	return 0;
     }
-
     /* You don't have to code this, but you might find it helpful for computing jTheta.  
      * It takes as input a matrix.  It computes the sum of the squares of each matrix entry,
      * with the exception of the first column of the matrix, which it ignores.
@@ -1019,8 +969,8 @@ public class ClassifierWindow extends WindowManager {
         return '0';
     }
 
-    public void saveImage()
-    {
+    public void saveImage(){
+
         if (!digitSelected) {
 
             Object[] possibilities = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
@@ -1044,3 +994,48 @@ public class ClassifierWindow extends WindowManager {
                 digit = s;
                 digitSelected = true;
             } else {
+                return;
+            }
+
+        }
+        JFileChooser chooser = new JFileChooser( new File(".") );
+        int value = chooser.showSaveDialog( this );
+        if (value == JFileChooser.APPROVE_OPTION)
+        {
+            File file = chooser.getSelectedFile();
+            try
+            {
+                PrintWriter outputFile = new PrintWriter( new BufferedWriter( new FileWriter( file.getName(), true )));
+                String imageVector = "\n";
+
+                for (int i = 0; i < myColorBoxes.length; i++)
+                {
+                    for (int j = 0; j < myColorBoxes[i].length; j++)
+                    {
+                        Color color = myColorBoxes[i][j].getBackground();
+                        imageVector = imageVector + getColorChar(color);
+                    }
+
+                }
+                imageVector = imageVector + ":" + digit;
+                outputFile.write(imageVector);
+                outputFile.write("\n\n");
+                outputFile.close();
+            }
+            catch (FileNotFoundException e)
+            {
+                e.printStackTrace();
+            }
+            catch (IOException e) 
+            {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void selectionMade( JComboBox whichComboBox )
+    {
+        digit = ((String) whichComboBox.getSelectedItem()).trim();
+        digitSelected = true;
+    }
+}
