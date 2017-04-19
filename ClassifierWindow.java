@@ -563,14 +563,16 @@ public class ClassifierWindow extends WindowManager {
                         else{
                             partialVal = (accumulator[l].get(i, j) / m) + lambda*(theta[l].get(i,j));
                         }
-                        
+                       
+					    // System.out.println(partialVal);
+
                         if(GRADIENT_CHECK){
                             
                             partials[l].set(i, j, partialVal);
                             
                         }
 
-                        double newVal = theta[l].get(i,j) - (alpha)*partialVal;
+                        double newVal = (theta[l].get(i,j) - (alpha*partialVal));
 
                         theta[l].set(i, j, newVal);
                     }
@@ -591,7 +593,7 @@ public class ClassifierWindow extends WindowManager {
                 resultGradient[1].print(5, 1);
             }
 
-            System.out.println(theta[2].get(1,5));
+//            System.out.println(theta[2].get(1,5));
 
             //adjust thetas using the calculated thetas
         }
