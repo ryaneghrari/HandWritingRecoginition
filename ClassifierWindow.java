@@ -396,6 +396,7 @@ public class ClassifierWindow extends WindowManager {
 
         // find out from the user which file they should use to save the matrices.
 
+        /*
         JFileChooser chooser = new JFileChooser( new File(".") );
         int value = chooser.showSaveDialog( this );
         PrintWriter outputFile = null;
@@ -417,15 +418,22 @@ public class ClassifierWindow extends WindowManager {
                 e.printStackTrace();
             }
         }
+        
+        */
 
         // So the first step in training the matrix is performing back propagation.
         theta = performBackPropagation();
 
+        /*
+        
         theta[1].print(outputFile, decimalFormat, 22);
         outputFile.write("\n\n");
         theta[2].print(outputFile, decimalFormat, 22);
+        
+        
 
         outputFile.close();
+        */
     }
 
     /* This method assumes that the input is a column vector (that is, a matrix with only a single
@@ -457,7 +465,7 @@ public class ClassifierWindow extends WindowManager {
 
         return maxIndex;
     }
-
+    
     /* 
      * This method assumes that the readTrainingData() method has been previously run, so
      * that the training and output arrays have already been filled.  If this assumption is not
@@ -468,12 +476,102 @@ public class ClassifierWindow extends WindowManager {
      */
 
     private Matrix[] performBackPropagation() {
-        // This neural network has only three layers, so only two theta matrices
+        
+        if(training == null || output == null){
+
+            System.exit(1);
+        }
+        
+        //intitialize thetas;
         theta[1] = createInitialTheta(HIDDEN_LAYER_SIZE,INPUT_VECTOR_DIMENSION + 1);
         theta[2] = createInitialTheta(NUM_OUTPUT_CLASSES, HIDDEN_LAYER_SIZE + 1);
+        
+        //create the accumulator
+        Matrix[] accumulator = new Matrix[3];
+        accumulator[1] = new Matrix(HIDDEN_LAYER_SIZE,INPUT_VECTOR_DIMENSION + 1, 0);
+        accumulator[2] = new Matrix(NUM_OUTPUT_CLASSES, HIDDEN_LAYER_SIZE + 1);
+        
+        //this is used for added bias unit during forward prop
+        double biasVal = 1.0;
+        
+        //iterate through every training example
+        for(int i = 0; i < training.length; i++){
+            
+            //set a(1) to the training example, a(1) also just means the first input
+            Matrix a_1 = training[i];
+            
+            //copmute a(2), the result form the hidden layer
+            //also compute a(3) the final output
+            //this is the same as compute hypothesis
+            
+            System.out.println("a 1 size: " + a_1.getRowDimension());
+            
+            Matrix a_1_withBias = addBiasUnit(a_1, biasVal);
+            
+            System.out.println("First run size: " + theta[1].getColumnDimension() + " - " + a_1_withBias.getRowDimension());
+            
+            Matrix a_2 = logisticFunction(theta[1].times(a_1_withBias));
+            
+            Matrix a_2_withBias = addBiasUnit(a_2, biasVal);
+            
+            Matrix a_3 = logisticFunction(theta[2].times(a_2_withBias));
+            
+            
+            //set the final output, y
+            Matrix y = output[i]; 
+            
+            //compute the error for delta(2)
+            Matrix delta_3 = a_3.minus(y);
+            
+            //compute the error from the hidden layer, delta(2)
+            //this involves first computing the derivative of the ouput from the hidden layer which is g(z(2)) or a(2)
+            //the derviative is simple (a(2) .* (1 - a(2)))
+            Matrix deriv_z_2 = a_2_withBias.arrayTimes((new Matrix(a_2_withBias.getRowDimension(), 1, 1).minus(a_2_withBias)));
+            Matrix delta_2 = theta[2].transpose().times(delta_3).arrayTimes(deriv_z_2);
+            
+            
+            //now we add to the accumulator for theta 2
+            accumulator[2] = accumulator[2].plus(delta_3.times(a_2_withBias.transpose()));
+            
+            //now we add to the assumulator for theta 1
+            //we need to keep in mind that we must remove the first element of delta_2
+            
+            System.out.println("Delta 2 size: " + delta_2.getRowDimension());
+            
+            Matrix delta_2_removed = removeFirstElement(delta_2);
+            
+            System.out.println("Delta 2 removed size: " + delta_2_removed.getRowDimension());
+            
+            accumulator[1] = accumulator[1].plus(delta_2_removed.times(a_1_withBias.transpose()));
+            
+        }
+        
+        Matrix[] partials = new Matrix[3];
+        partials[1] = new Matrix(HIDDEN_LAYER_SIZE,INPUT_VECTOR_DIMENSION + 1, 0);
+        partials[2] = new Matrix(NUM_OUTPUT_CLASSES, HIDDEN_LAYER_SIZE + 1);
+        
+        int m = training.length;
+        
+        for(int l = 1; l < theta.length; l++){
+            for(int i = 0; i < theta[l].getRowDimension(); i++){
+                for(int j = 0; j < theta[l].getColumnDimension(); j++){
+                    
+                    if(j == 0){
+                        partials[l].set(i, j, accumulator[l].get(i, j) / m); 
+                    }
+                    else{
+                        double partialVal = (accumulator[l].get(i, j) / m) + lambda*(theta[l].get(i,j));
+                        partials[l].set(i,j, partialVal);
+                    }
+                }
+            }
+        }
+        
+        partials[2].print(10,3);
+        
+        System.out.println("FINISHED BACKPROP");
 
-
-        return null;
+        return partials;
     }
 
     public void readTrainingData() {
@@ -529,7 +627,7 @@ public class ClassifierWindow extends WindowManager {
 
                     inputValue = parseLine.next().trim();
                     outputValue = parseLine.next().trim();
-
+                    
                     // Make matrices out of these strings
                     /* One note: the method inputStringToMatrix() should NOT add the bias term to the input vector
                      * That is done by the method computeHypothesis().
@@ -537,16 +635,8 @@ public class ClassifierWindow extends WindowManager {
 
                     training[index] = inputStringToMatrix(inputValue);
                     output[index] = vectorizeY(outputValue);
-
+                    
                     ++index;
-
-                    if(DB){
-
-                        System.out.println("Training at " + index + ": " + training[index]);
-                        System.out.println("Output at " + index + ": " + training[index]);
-
-                    }
-
                 }
 
             } catch (Exception e) {
@@ -590,14 +680,14 @@ public class ClassifierWindow extends WindowManager {
      */
     private static Matrix inputStringToMatrix(String input) {
 
-        Matrix temp = new Matrix(INPUT_VECTOR_DIMENSION,1);
+        Matrix temp = new Matrix(INPUT_VECTOR_DIMENSION,1, 0);
 
         for(int i = 0; i < INPUT_VECTOR_DIMENSION; i++){
             if(input.charAt(i) == '1'){
                 temp.set(i,0,1.0);
             }
         }
-
+        
         return temp;
     }
 
@@ -710,17 +800,35 @@ public class ClassifierWindow extends WindowManager {
         
         int numRows = inputs.getRowDimension();
         
-        System.out.println("Num rows: " + numRows);
+        Matrix mWithBias = new Matrix(numRows + 1, 1, biasVal);
         
-        Matrix mWithBias = new Matrix(numRows, 1, biasVal);
-        
-        for(int i = 1; i < numRows; i++){
+        for(int i = 1; i < numRows + 1; i++){
             
-            mWithBias.set(i, 0, inputs.get(i, 0));
+            mWithBias.set(i, 0, inputs.get(i - 1, 0));
             
         }
         
         return mWithBias;
+    }
+    
+    private Matrix removeFirstElement(Matrix input){
+        
+        if (input.getColumnDimension() != 1) {
+            System.out.print("Error: input not a column vector!\n");
+            System.exit(1);
+        }
+        
+        int numRows = input.getRowDimension();
+        
+        Matrix mRemoved = new Matrix(numRows - 1, 1);
+        
+        for(int i = 1; i < numRows; i++){
+            
+            mRemoved.set(i - 1, 0, input.get(i, 0));
+            
+        }
+        
+        return mRemoved;
     }
 
     /* This is a helper method.  It takes as input a matrix that results from the output of the neural network, and checks
@@ -761,10 +869,6 @@ public class ClassifierWindow extends WindowManager {
      */
     private Matrix[] gradientCheck(Matrix[] trainingData, Matrix[] outputData, Matrix[] thetaValues, double lambdaValue) {
 
-        
-        
-        
-        
         return null;
     }
 
