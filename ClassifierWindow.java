@@ -973,10 +973,26 @@ public class ClassifierWindow extends WindowManager {
                 System.exit(1);
             }
             
-            System.exit(1);
+            for(int k = 0; k < currOutput.getRowDimension(); k++ ){
+                if(currOutput.get(k,0) == 1){
+                    sum += Math.log(hypot.get(k,0));
+                }
+                else if(currOutput.get(k,0) == 0){
+                    sum += Math.log(1 - hypot.get(k,0));
+                }
+                else{
+                    System.err.print("Unexpected non binary numeral in the output matrix");
+                }
+            }
+        }
+        
+        double regterm = 0.0;
+        
+        for(int i = 0; i < thetaValues.length; i++){
+            regterm += sumSquaredMatrixEntries(thetaValues[i]);
         }
 
-        return 0;
+        return ((sum / -n) + regterm);
     }
     /* You don't have to code this, but you might find it helpful for computing jTheta.  
      * It takes as input a matrix.  It computes the sum of the squares of each matrix entry,
