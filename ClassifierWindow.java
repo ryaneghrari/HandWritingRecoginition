@@ -65,14 +65,16 @@ public class ClassifierWindow extends WindowManager {
     private static final double epsilon = 1.0;
     private static final long DEFAULT_SEED = 478978392;
     private static final double DEFAULT_LAMBDA_VALUE = 1.0;
-    private static final double DEFAULT_ALPHA = 0.01;
-   // private static final int DEFAULT_NUM_ITERATIONS = 5000000;
-    private static final int DEFAULT_NUM_ITERATIONS = 50;
+    private static final double DEFAULT_ALPHA = 0.001;
+    // private static final int DEFAULT_NUM_ITERATIONS = 5000000;
+    private static final int DEFAULT_NUM_ITERATIONS = 5000;
     private static final double STOP_THRESHOLD = 0.0001;
     // This stop the program if we grow too far above our achieved minimum
     private static final double GROWTH_THRESHOLD = 5.0;
     private static final double GRADIENT_CHECKING_EPSILON = 0.0001;
     private static final int MAX_DIMENSION_GRADIENT_CHECKING = 10;
+    
+    private static final boolean GRADIENT_CHECK = false;
 
     private JButton trainNetworkButton;
     private JButton saveThetasButton;
@@ -87,7 +89,7 @@ public class ClassifierWindow extends WindowManager {
     private double alpha;
     private int numIterations;
 
-    private final boolean DB = true;
+    private final boolean DB = false;
 
     private DecimalFormat decimalFormat;
     public ClassifierWindow() {
@@ -404,37 +406,36 @@ public class ClassifierWindow extends WindowManager {
 
         if (value == JFileChooser.APPROVE_OPTION)
         {
-            File file = chooser.getSelectedFile();
-            try
-            {
-                outputFile = new PrintWriter( file);
+        File file = chooser.getSelectedFile();
+        try
+        {
+        outputFile = new PrintWriter( file);
 
-            }
-            catch (FileNotFoundException e)
-            {
-                e.printStackTrace();
-            }
-            catch (IOException e) 
-            {
-                e.printStackTrace();
-            }
         }
-        
-        */
+        catch (FileNotFoundException e)
+        {
+        e.printStackTrace();
+        }
+        catch (IOException e) 
+        {
+        e.printStackTrace();
+        }
+        }
+
+         */
 
         // So the first step in training the matrix is performing back propagation.
         theta = performBackPropagation();
 
         /*
-        
+
         theta[1].print(outputFile, decimalFormat, 22);
         outputFile.write("\n\n");
         theta[2].print(outputFile, decimalFormat, 22);
-        
-        
+
 
         outputFile.close();
-        */
+         */
     }
 
     /* This method assumes that the input is a column vector (that is, a matrix with only a single
@@ -466,7 +467,7 @@ public class ClassifierWindow extends WindowManager {
 
         return maxIndex;
     }
-    
+
     /* 
      * This method assumes that the readTrainingData() method has been previously run, so
      * that the training and output arrays have already been filled.  If this assumption is not
@@ -477,102 +478,124 @@ public class ClassifierWindow extends WindowManager {
      */
 
     private Matrix[] performBackPropagation() {
-        
+
         if(training == null || output == null){
 
             System.exit(1);
         }
-        
+
         //intitialize thetas;
         theta[1] = createInitialTheta(HIDDEN_LAYER_SIZE,INPUT_VECTOR_DIMENSION + 1);
         theta[2] = createInitialTheta(NUM_OUTPUT_CLASSES, HIDDEN_LAYER_SIZE + 1);
-        
+
         for(int iter = 0; iter < DEFAULT_NUM_ITERATIONS; iter++){
             //create the accumulator
             Matrix[] accumulator = new Matrix[3];
             accumulator[1] = new Matrix(HIDDEN_LAYER_SIZE,INPUT_VECTOR_DIMENSION + 1, 0);
-            accumulator[2] = new Matrix(NUM_OUTPUT_CLASSES, HIDDEN_LAYER_SIZE + 1);
-            
+            accumulator[2] = new Matrix(NUM_OUTPUT_CLASSES, HIDDEN_LAYER_SIZE + 1, 0);
+
             //this is used for added bias unit during forward prop
             double biasVal = 1.0;
-            
+
             //iterate through every training example
             for(int i = 0; i < training.length; i++){
-                
+
                 //set a(1) to the training example, a(1) also just means the first input
                 Matrix a_1 = training[i];
-                
+
                 //copmute a(2), the result form the hidden layer
                 //also compute a(3) the final output
                 //this is the same as compute hypothesis
-    
+
                 Matrix a_1_withBias = addBiasUnit(a_1, biasVal);
-                
+
                 Matrix a_2 = logisticFunction(theta[1].times(a_1_withBias));
-                
+
                 Matrix a_2_withBias = addBiasUnit(a_2, biasVal);
-                
+
                 Matrix a_3 = logisticFunction(theta[2].times(a_2_withBias));
-                
-                
+
                 //set the final output, y
                 Matrix y = output[i]; 
-                
+
                 //compute the error for delta(2)
                 Matrix delta_3 = a_3.minus(y);
-                
+
                 //compute the error from the hidden layer, delta(2)
                 //this involves first computing the derivative of the ouput from the hidden layer which is g(z(2)) or a(2)
                 //the derviative is simple (a(2) .* (1 - a(2)))
                 Matrix deriv_z_2 = a_2_withBias.arrayTimes((new Matrix(a_2_withBias.getRowDimension(), 1, 1).minus(a_2_withBias)));
                 Matrix delta_2 = theta[2].transpose().times(delta_3).arrayTimes(deriv_z_2);
-                
-                
+
                 //now we add to the accumulator for theta 2
                 accumulator[2] = accumulator[2].plus(delta_3.times(a_2_withBias.transpose()));
-                
+
                 //now we add to the assumulator for theta 1
                 //we need to keep in mind that we must remove the first element of delta_2
-    
+
                 Matrix delta_2_removed = removeFirstElement(delta_2);
-                
+
                 accumulator[1] = accumulator[1].plus(delta_2_removed.times(a_1_withBias.transpose()));
-                
+
             }
-            
+
             int m = training.length;
             
+            Matrix[] partials;
+            
+            if(GRADIENT_CHECK){
+                
+                partials = new Matrix[3];
+                partials[1] = new Matrix(HIDDEN_LAYER_SIZE,INPUT_VECTOR_DIMENSION + 1, 0);
+                partials[2] = new Matrix(NUM_OUTPUT_CLASSES, HIDDEN_LAYER_SIZE + 1, 0);
+                
+            }
+
             for(int l = 1; l < theta.length; l++){
-                
-                System.out.println("l: " + l);
-                
                 for(int i = 0; i < theta[l].getRowDimension(); i++){
                     for(int j = 0; j < theta[l].getColumnDimension(); j++){
-                        
+
                         double partialVal;
-                        
+
                         if(j == 0){
                             partialVal = accumulator[l].get(i, j) / m; 
                         }
                         else{
                             partialVal = (accumulator[l].get(i, j) / m) + lambda*(theta[l].get(i,j));
                         }
-                       
-                        double newVal = theta[l].get(i,j) - (alpha)*partialVal;
                         
+                        if(GRADIENT_CHECK){
+                            
+                            partials[l].set(i, j, partialVal);
+                            
+                        }
+
+                        double newVal = theta[l].get(i,j) - (alpha)*partialVal;
+
                         theta[l].set(i, j, newVal);
                     }
                 }
             }
             
-            System.out.println(theta[2].get(0,0));
-            
+            if(GRADIENT_CHECK){
+                
+                System.out.println("Starting Gradient Check...");
+                
+                //partials[1].print(2, 3);
+                System.out.println(partials[1].get(2,4));
+                
+                Matrix[] resultGradient = gradientCheck(training, output, theta, lambda);
+                
+                System.out.println("Finished Gradient Check...");
+                
+                resultGradient[1].print(5, 1);
+            }
+
+            System.out.println(theta[2].get(1,5));
+
             //adjust thetas using the calculated thetas
         }
-           
-        
-        System.out.println("FINISHED BACKPROP");
-        
+
         return theta;
     }
 
@@ -582,11 +605,7 @@ public class ClassifierWindow extends WindowManager {
         if (value == JFileChooser.APPROVE_OPTION) {
 
             File file = chooser.getSelectedFile();
-
-            if(DB){
-                System.out.println("readingTrainingData: " + file);
-            }
-
+            
             try {
                 Scanner scanner = new Scanner(file);
                 String line;
@@ -629,7 +648,7 @@ public class ClassifierWindow extends WindowManager {
 
                     inputValue = parseLine.next().trim();
                     outputValue = parseLine.next().trim();
-                    
+
                     // Make matrices out of these strings
                     /* One note: the method inputStringToMatrix() should NOT add the bias term to the input vector
                      * That is done by the method computeHypothesis().
@@ -637,7 +656,7 @@ public class ClassifierWindow extends WindowManager {
 
                     training[index] = inputStringToMatrix(inputValue);
                     output[index] = vectorizeY(outputValue);
-                    
+
                     ++index;
                 }
 
@@ -689,7 +708,7 @@ public class ClassifierWindow extends WindowManager {
                 temp.set(i,0,1.0);
             }
         }
-        
+
         return temp;
     }
 
@@ -735,17 +754,17 @@ public class ClassifierWindow extends WindowManager {
 
         int numRows = x.getRowDimension();
         int numCols = x.getColumnDimension();
-        
+
         if( numCols != 1){
             System.err.println("Passed incorrectly sized matrix to logisticFunction(Matrix m)");
         }
-        
+
         Matrix logMatr = new Matrix(numRows, numCols);
 
         for(int i = 0; i < numRows; i++){
-                double newVal = logisticFunction( x.get(i,0) );
+            double newVal = logisticFunction( x.get(i,0) );
 
-                logMatr.set(i, 0, newVal); 
+            logMatr.set(i, 0, newVal); 
         }
 
         return logMatr;
@@ -762,82 +781,80 @@ public class ClassifierWindow extends WindowManager {
         //then multiply z1 * theta2
         //then apply sigmoid function to each value of the output lets call that z2
         //then return that matrix;
-        
+
         if(theta1 == null || theta2 == null){
-            
+
             System.err.println("Thetas are not initializesd");
             System.exit(1);
         }
-        
+
         if (input.getColumnDimension() != 1) {
             System.err.println("Error: input not a column vector!\n");
             //System.exit(1);
         }
-        
+
         if((input.getRowDimension() + 1) != theta1.getColumnDimension()){
             System.err.println("Innapropriate theta matrix: wrong number of rows");
             //System.exit(1);
         }
-        
+
         //add check to make sure number of rows in theta1 are equal to number of columns in theta2
-    
+
         if((theta1.getRowDimension() + 1) != (theta2.getColumnDimension())){
-                System.err.println("Innapropriate theta matrix: theta matrices are not the same size");
-                //System.exit(1);
-            }
-        
+            System.err.println("Innapropriate theta matrix: theta matrices are not the same size");
+            //System.exit(1);
+        }
+
         double biasVal = 1.0;
-            
+
         Matrix inputWithBias = addBiasUnit(input, biasVal);  
- 
+
         Matrix result1 = logisticFunction(theta1.times(inputWithBias));
-        
+
         Matrix result1WithBias = addBiasUnit(result1, biasVal);
-        
+
         Matrix output = logisticFunction(theta2.times(result1WithBias));
-        
-        output.print(10, 2);
-   
+
         return output;
     }
-    
+
     private Matrix addBiasUnit(Matrix inputs, double biasVal){
-        
+
         if (inputs.getColumnDimension() != 1) {
             System.out.print("Error: input not a column vector!\n");
             System.exit(1);
         }
-        
+
         int numRows = inputs.getRowDimension();
-        
+
         Matrix mWithBias = new Matrix(numRows + 1, 1, biasVal);
-        
+
         for(int i = 1; i < numRows + 1; i++){
-            
+
             mWithBias.set(i, 0, inputs.get(i - 1, 0));
-            
+
         }
-        
+
         return mWithBias;
     }
-    
+
     private Matrix removeFirstElement(Matrix input){
-        
+
         if (input.getColumnDimension() != 1) {
             System.out.print("Error: input not a column vector!\n");
             System.exit(1);
         }
-        
+
         int numRows = input.getRowDimension();
-        
+
         Matrix mRemoved = new Matrix(numRows - 1, 1);
-        
+
         for(int i = 1; i < numRows; i++){
-            
+
             mRemoved.set(i - 1, 0, input.get(i, 0));
-            
+
         }
-        
+
         return mRemoved;
     }
 
@@ -878,69 +895,76 @@ public class ClassifierWindow extends WindowManager {
      * as the value of epsilon for gradient approximation purposes.
      */
     private Matrix[] gradientCheck(Matrix[] trainingData, Matrix[] outputData, Matrix[] thetaValues, double lambdaValue) {
-    
-     	Matrix[] gradCheck = new Matrix[3];
-    		
-    	int theta1Rows = thetaValues[1].getRowDimension();
-    	int theta1Cols = thetaValues[1].getColumnDimension();
-    
-    	int theta2Rows = thetaValues[2].getRowDimension();
-    	int theta2Cols = thetaValues[2].getColumnDimension();	
-    
-            Matrix gradApprox1 = new Matrix(theta1Rows, theta1Cols); 
-    	Matrix gradApprox2 = new Matrix(theta2Rows, theta2Cols);
-    
-    	for(int r  = 0; r < theta1Rows; r++){
-    		for(int c = 0; c < theta1Cols; c++){
-    			
-    			Matrix[] thetaValAdj = thetaValues;			
-    
-    			Matrix thetaPlus = new Matrix(theta1Rows, theta1Cols);
-    			thetaPlus = thetaValues[1];
-    			thetaPlus.set(r, c, thetaPlus.get(r, c) + GRADIENT_CHECKING_EPSILON);
-    			thetaValAdj[1] = thetaPlus;			
-    
-    			double thetaPlusCost = jTheta(trainingData, outputData, thetaValAdj, lambdaValue); 
-    
-    			Matrix thetaMinus = new Matrix(theta1Rows, theta1Cols);
-    			thetaMinus = thetaValues[1];
-    			thetaMinus.set(r, c, thetaMinus.get(r, c) - GRADIENT_CHECKING_EPSILON);
-    			thetaValAdj[1] = thetaMinus;
-    
-    			double thetaMinusCost = jTheta(trainingData, outputData, thetaValAdj, lambdaValue);
-    
-    			gradApprox1.set(r, c, ((thetaPlusCost - thetaMinusCost) / (2*(GRADIENT_CHECKING_EPSILON))));
-    		}		
-    	}
-            
-    	gradCheck[1] = gradApprox1;
-    
-    	for(int r  = 0; r < theta2Rows; r++){
-    		for(int c = 0; c < theta2Cols; c++){
-    			
-    			Matrix[] thetaValAdj = thetaValues;			
-    
-    			Matrix thetaPlus = new Matrix(theta2Rows, theta2Cols);
-    			thetaPlus = thetaValues[2];
-    			thetaPlus.set(r, c, thetaPlus.get(r, c) + GRADIENT_CHECKING_EPSILON);
-    			thetaValAdj[2] = thetaPlus;			
-    
-    			double thetaPlusCost = jTheta(trainingData, outputData, thetaValAdj, lambdaValue); 
-    
-    			Matrix thetaMinus = new Matrix(theta2Rows, theta2Cols);
-    			thetaMinus = thetaValues[2];
-    			thetaMinus.set(r, c, thetaMinus.get(r, c) - GRADIENT_CHECKING_EPSILON);
-    			thetaValAdj[2] = thetaMinus;
-    
-    			double thetaMinusCost = jTheta(trainingData, outputData, thetaValAdj, lambdaValue);
-    
-    			gradApprox1.set(r, c, ((thetaPlusCost - thetaMinusCost) / (2*(GRADIENT_CHECKING_EPSILON))));
-    		}		
-    	}
-            
-    
-    	gradCheck[2] = gradApprox2;
 
+        
+        System.out.println("In gradient Check");
+        
+        Matrix[] gradCheck = new Matrix[3];
+
+        int theta1Rows = thetaValues[1].getRowDimension();
+        int theta1Cols = thetaValues[1].getColumnDimension();
+
+        int theta2Rows = thetaValues[2].getRowDimension();
+        int theta2Cols = thetaValues[2].getColumnDimension();	
+
+        Matrix gradApprox1 = new Matrix(theta1Rows, theta1Cols); 
+        Matrix gradApprox2 = new Matrix(theta2Rows, theta2Cols);
+
+        System.out.println("Started Theta 1");
+        
+        for(int r  = 0; r < theta1Rows; r++){
+            for(int c = 0; c < theta1Cols; c++){
+                
+                Matrix[] thetaValAdj = thetaValues;			
+
+                Matrix thetaPlus = thetaValues[1].copy();
+                thetaPlus.set(r, c, thetaPlus.get(r, c) + GRADIENT_CHECKING_EPSILON);
+                thetaValAdj[1] = thetaPlus;	
+
+                double thetaPlusCost = jTheta(trainingData, outputData, thetaValAdj, lambdaValue); 
+
+                Matrix thetaMinus = thetaValues[1].copy();
+                thetaMinus.set(r, c, thetaMinus.get(r, c) - GRADIENT_CHECKING_EPSILON);
+                thetaValAdj[1] = thetaMinus;
+
+                double thetaMinusCost = jTheta(trainingData, outputData, thetaValAdj, lambdaValue);
+
+                gradApprox1.set(r, c, ((thetaPlusCost - thetaMinusCost) / (2*(GRADIENT_CHECKING_EPSILON))));
+                
+                if(r == 2 && c == 4){
+                    
+                    System.out.println("GRadientCheck: " + gradApprox1.get(2,4));
+                    
+                }
+            }		
+        }
+
+        gradCheck[1] = gradApprox1;
+        
+        System.out.println("Started Theta 2");
+
+        for(int r  = 0; r < theta2Rows; r++){
+            for(int c = 0; c < theta2Cols; c++){
+
+                Matrix[] thetaValAdj = thetaValues;			
+
+                Matrix thetaPlus = thetaValues[2].copy();
+                thetaPlus.set(r, c, thetaPlus.get(r, c) + GRADIENT_CHECKING_EPSILON);
+                thetaValAdj[2] = thetaPlus;			
+
+                double thetaPlusCost = jTheta(trainingData, outputData, thetaValAdj, lambdaValue); 
+
+                Matrix thetaMinus = thetaValues[2].copy();
+                thetaMinus.set(r, c, thetaMinus.get(r, c) - GRADIENT_CHECKING_EPSILON);
+                thetaValAdj[2] = thetaMinus;
+
+                double thetaMinusCost = jTheta(trainingData, outputData, thetaValAdj, lambdaValue);
+
+                gradApprox1.set(r, c, ((thetaPlusCost - thetaMinusCost) / (2*(GRADIENT_CHECKING_EPSILON))));
+            }		
+        }
+
+        gradCheck[2] = gradApprox2;
         return gradCheck;
     }
 
@@ -954,25 +978,25 @@ public class ClassifierWindow extends WindowManager {
     private double jTheta(Matrix[] trainingData, Matrix[] outputData, Matrix[] thetaValues, double lambdaValue) {
 
         int n = trainingData.length;
-        
+
         if(n != outputData.length){
             System.err.println("Incorrect number of output data and training data");
             System.exit(1);
         }
-        
+
         double sum = 0.0;
-        
+
         for(int m = 0; m < n; m++){
-            
-            Matrix hypot = computeHypothesis(trainingData[m], thetaValues[0], thetaValues[1]);
-            
+
+            Matrix hypot = computeHypothesis(trainingData[m], thetaValues[1], thetaValues[2]);
+
             Matrix currOutput = outputData[m];
-            
+
             if(currOutput.getColumnDimension() != 1){
                 System.err.println("Output data set: " + m + " was not a column vector");
                 System.exit(1);
             }
-            
+
             for(int k = 0; k < currOutput.getRowDimension(); k++ ){
                 if(currOutput.get(k,0) == 1){
                     sum += Math.log(hypot.get(k,0));
@@ -985,15 +1009,16 @@ public class ClassifierWindow extends WindowManager {
                 }
             }
         }
-        
+
         double regterm = 0.0;
-        
-        for(int i = 0; i < thetaValues.length; i++){
+
+        for(int i = 1; i < thetaValues.length; i++){
             regterm += sumSquaredMatrixEntries(thetaValues[i]);
         }
 
         return ((sum / -n) + regterm);
     }
+
     /* You don't have to code this, but you might find it helpful for computing jTheta.  
      * It takes as input a matrix.  It computes the sum of the squares of each matrix entry,
      * with the exception of the first column of the matrix, which it ignores.
@@ -1001,15 +1026,15 @@ public class ClassifierWindow extends WindowManager {
     private double sumSquaredMatrixEntries(Matrix m) {
 
         double sum = 0.0;
-        
+
         for(int i = 0; i < m.getRowDimension(); i++){
             for(int j = 0; j < m.getColumnDimension(); j++){
-                
+
                 sum += (m.get(i,j) * m.get(i,j));
-                
+
             }
         }
-        
+
         return sum;
     }
 
