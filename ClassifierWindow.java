@@ -65,8 +65,9 @@ public class ClassifierWindow extends WindowManager {
     private static final double epsilon = 1.0;
     private static final long DEFAULT_SEED = 478978392;
     private static final double DEFAULT_LAMBDA_VALUE = 1.0;
-    private static final double DEFAULT_ALPHA = 0.001;
-    private static final int DEFAULT_NUM_ITERATIONS = 5000000;
+    private static final double DEFAULT_ALPHA = 0.01;
+   // private static final int DEFAULT_NUM_ITERATIONS = 5000000;
+    private static final int DEFAULT_NUM_ITERATIONS = 50;
     private static final double STOP_THRESHOLD = 0.0001;
     // This stop the program if we grow too far above our achieved minimum
     private static final double GROWTH_THRESHOLD = 5.0;
@@ -486,92 +487,93 @@ public class ClassifierWindow extends WindowManager {
         theta[1] = createInitialTheta(HIDDEN_LAYER_SIZE,INPUT_VECTOR_DIMENSION + 1);
         theta[2] = createInitialTheta(NUM_OUTPUT_CLASSES, HIDDEN_LAYER_SIZE + 1);
         
-        //create the accumulator
-        Matrix[] accumulator = new Matrix[3];
-        accumulator[1] = new Matrix(HIDDEN_LAYER_SIZE,INPUT_VECTOR_DIMENSION + 1, 0);
-        accumulator[2] = new Matrix(NUM_OUTPUT_CLASSES, HIDDEN_LAYER_SIZE + 1);
-        
-        //this is used for added bias unit during forward prop
-        double biasVal = 1.0;
-        
-        //iterate through every training example
-        for(int i = 0; i < training.length; i++){
+        for(int iter = 0; iter < DEFAULT_NUM_ITERATIONS; iter++){
+            //create the accumulator
+            Matrix[] accumulator = new Matrix[3];
+            accumulator[1] = new Matrix(HIDDEN_LAYER_SIZE,INPUT_VECTOR_DIMENSION + 1, 0);
+            accumulator[2] = new Matrix(NUM_OUTPUT_CLASSES, HIDDEN_LAYER_SIZE + 1);
             
-            //set a(1) to the training example, a(1) also just means the first input
-            Matrix a_1 = training[i];
+            //this is used for added bias unit during forward prop
+            double biasVal = 1.0;
             
-            //copmute a(2), the result form the hidden layer
-            //also compute a(3) the final output
-            //this is the same as compute hypothesis
+            //iterate through every training example
+            for(int i = 0; i < training.length; i++){
+                
+                //set a(1) to the training example, a(1) also just means the first input
+                Matrix a_1 = training[i];
+                
+                //copmute a(2), the result form the hidden layer
+                //also compute a(3) the final output
+                //this is the same as compute hypothesis
+    
+                Matrix a_1_withBias = addBiasUnit(a_1, biasVal);
+                
+                Matrix a_2 = logisticFunction(theta[1].times(a_1_withBias));
+                
+                Matrix a_2_withBias = addBiasUnit(a_2, biasVal);
+                
+                Matrix a_3 = logisticFunction(theta[2].times(a_2_withBias));
+                
+                
+                //set the final output, y
+                Matrix y = output[i]; 
+                
+                //compute the error for delta(2)
+                Matrix delta_3 = a_3.minus(y);
+                
+                //compute the error from the hidden layer, delta(2)
+                //this involves first computing the derivative of the ouput from the hidden layer which is g(z(2)) or a(2)
+                //the derviative is simple (a(2) .* (1 - a(2)))
+                Matrix deriv_z_2 = a_2_withBias.arrayTimes((new Matrix(a_2_withBias.getRowDimension(), 1, 1).minus(a_2_withBias)));
+                Matrix delta_2 = theta[2].transpose().times(delta_3).arrayTimes(deriv_z_2);
+                
+                
+                //now we add to the accumulator for theta 2
+                accumulator[2] = accumulator[2].plus(delta_3.times(a_2_withBias.transpose()));
+                
+                //now we add to the assumulator for theta 1
+                //we need to keep in mind that we must remove the first element of delta_2
+    
+                Matrix delta_2_removed = removeFirstElement(delta_2);
+                
+                accumulator[1] = accumulator[1].plus(delta_2_removed.times(a_1_withBias.transpose()));
+                
+            }
             
-            System.out.println("a 1 size: " + a_1.getRowDimension());
+            int m = training.length;
             
-            Matrix a_1_withBias = addBiasUnit(a_1, biasVal);
-            
-            System.out.println("First run size: " + theta[1].getColumnDimension() + " - " + a_1_withBias.getRowDimension());
-            
-            Matrix a_2 = logisticFunction(theta[1].times(a_1_withBias));
-            
-            Matrix a_2_withBias = addBiasUnit(a_2, biasVal);
-            
-            Matrix a_3 = logisticFunction(theta[2].times(a_2_withBias));
-            
-            
-            //set the final output, y
-            Matrix y = output[i]; 
-            
-            //compute the error for delta(2)
-            Matrix delta_3 = a_3.minus(y);
-            
-            //compute the error from the hidden layer, delta(2)
-            //this involves first computing the derivative of the ouput from the hidden layer which is g(z(2)) or a(2)
-            //the derviative is simple (a(2) .* (1 - a(2)))
-            Matrix deriv_z_2 = a_2_withBias.arrayTimes((new Matrix(a_2_withBias.getRowDimension(), 1, 1).minus(a_2_withBias)));
-            Matrix delta_2 = theta[2].transpose().times(delta_3).arrayTimes(deriv_z_2);
-            
-            
-            //now we add to the accumulator for theta 2
-            accumulator[2] = accumulator[2].plus(delta_3.times(a_2_withBias.transpose()));
-            
-            //now we add to the assumulator for theta 1
-            //we need to keep in mind that we must remove the first element of delta_2
-            
-            System.out.println("Delta 2 size: " + delta_2.getRowDimension());
-            
-            Matrix delta_2_removed = removeFirstElement(delta_2);
-            
-            System.out.println("Delta 2 removed size: " + delta_2_removed.getRowDimension());
-            
-            accumulator[1] = accumulator[1].plus(delta_2_removed.times(a_1_withBias.transpose()));
-            
-        }
-        
-        Matrix[] partials = new Matrix[3];
-        partials[1] = new Matrix(HIDDEN_LAYER_SIZE,INPUT_VECTOR_DIMENSION + 1, 0);
-        partials[2] = new Matrix(NUM_OUTPUT_CLASSES, HIDDEN_LAYER_SIZE + 1);
-        
-        int m = training.length;
-        
-        for(int l = 1; l < theta.length; l++){
-            for(int i = 0; i < theta[l].getRowDimension(); i++){
-                for(int j = 0; j < theta[l].getColumnDimension(); j++){
-                    
-                    if(j == 0){
-                        partials[l].set(i, j, accumulator[l].get(i, j) / m); 
-                    }
-                    else{
-                        double partialVal = (accumulator[l].get(i, j) / m) + lambda*(theta[l].get(i,j));
-                        partials[l].set(i,j, partialVal);
+            for(int l = 1; l < theta.length; l++){
+                
+                System.out.println("l: " + l);
+                
+                for(int i = 0; i < theta[l].getRowDimension(); i++){
+                    for(int j = 0; j < theta[l].getColumnDimension(); j++){
+                        
+                        double partialVal;
+                        
+                        if(j == 0){
+                            partialVal = accumulator[l].get(i, j) / m; 
+                        }
+                        else{
+                            partialVal = (accumulator[l].get(i, j) / m) + lambda*(theta[l].get(i,j));
+                        }
+                       
+                        double newVal = theta[l].get(i,j) - (alpha)*partialVal;
+                        
+                        theta[l].set(i, j, newVal);
                     }
                 }
             }
+            
+            System.out.println(theta[2].get(0,0));
+            
+            //adjust thetas using the calculated thetas
         }
-        
-        partials[2].print(10,3);
+           
         
         System.out.println("FINISHED BACKPROP");
-
-        return partials;
+        
+        return theta;
     }
 
     public void readTrainingData() {
@@ -761,6 +763,12 @@ public class ClassifierWindow extends WindowManager {
         //then apply sigmoid function to each value of the output lets call that z2
         //then return that matrix;
         
+        if(theta1 == null || theta2 == null){
+            
+            System.err.println("Thetas are not initializesd");
+            System.exit(1);
+        }
+        
         if (input.getColumnDimension() != 1) {
             System.err.println("Error: input not a column vector!\n");
             //System.exit(1);
@@ -787,6 +795,8 @@ public class ClassifierWindow extends WindowManager {
         Matrix result1WithBias = addBiasUnit(result1, biasVal);
         
         Matrix output = logisticFunction(theta2.times(result1WithBias));
+        
+        output.print(10, 2);
    
         return output;
     }
