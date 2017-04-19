@@ -878,8 +878,70 @@ public class ClassifierWindow extends WindowManager {
      * as the value of epsilon for gradient approximation purposes.
      */
     private Matrix[] gradientCheck(Matrix[] trainingData, Matrix[] outputData, Matrix[] thetaValues, double lambdaValue) {
+    
+     	Matrix[] gradCheck = new Matrix[3];
+    		
+    	int theta1Rows = thetaValues[1].getRowDimension();
+    	int theta1Cols = thetaValues[1].getColumnDimension();
+    
+    	int theta2Rows = thetaValues[2].getRowDimension();
+    	int theta2Cols = thetaValues[2].getColumnDimension();	
+    
+            Matrix gradApprox1 = new Matrix(theta1Rows, theta1Cols); 
+    	Matrix gradApprox2 = new Matrix(theta2Rows, theta2Cols);
+    
+    	for(int r  = 0; r < theta1Rows; r++){
+    		for(int c = 0; c < theta1Cols; c++){
+    			
+    			Matrix[] thetaValAdj = thetaValues;			
+    
+    			Matrix thetaPlus = new Matrix(theta1Rows, theta1Cols);
+    			thetaPlus = thetaValues[1];
+    			thetaPlus.set(r, c, thetaPlus.get(r, c) + GRADIENT_CHECKING_EPSILON);
+    			thetaValAdj[1] = thetaPlus;			
+    
+    			double thetaPlusCost = jTheta(trainingData, outputData, thetaValAdj, lambdaValue); 
+    
+    			Matrix thetaMinus = new Matrix(theta1Rows, theta1Cols);
+    			thetaMinus = thetaValues[1];
+    			thetaMinus.set(r, c, thetaMinus.get(r, c) - GRADIENT_CHECKING_EPSILON);
+    			thetaValAdj[1] = thetaMinus;
+    
+    			double thetaMinusCost = jTheta(trainingData, outputData, thetaValAdj, lambdaValue);
+    
+    			gradApprox1.set(r, c, ((thetaPlusCost - thetaMinusCost) / (2*(GRADIENT_CHECKING_EPSILON))));
+    		}		
+    	}
+            
+    	gradCheck[1] = gradApprox1;
+    
+    	for(int r  = 0; r < theta2Rows; r++){
+    		for(int c = 0; c < theta2Cols; c++){
+    			
+    			Matrix[] thetaValAdj = thetaValues;			
+    
+    			Matrix thetaPlus = new Matrix(theta2Rows, theta2Cols);
+    			thetaPlus = thetaValues[2];
+    			thetaPlus.set(r, c, thetaPlus.get(r, c) + GRADIENT_CHECKING_EPSILON);
+    			thetaValAdj[2] = thetaPlus;			
+    
+    			double thetaPlusCost = jTheta(trainingData, outputData, thetaValAdj, lambdaValue); 
+    
+    			Matrix thetaMinus = new Matrix(theta2Rows, theta2Cols);
+    			thetaMinus = thetaValues[2];
+    			thetaMinus.set(r, c, thetaMinus.get(r, c) - GRADIENT_CHECKING_EPSILON);
+    			thetaValAdj[2] = thetaMinus;
+    
+    			double thetaMinusCost = jTheta(trainingData, outputData, thetaValAdj, lambdaValue);
+    
+    			gradApprox1.set(r, c, ((thetaPlusCost - thetaMinusCost) / (2*(GRADIENT_CHECKING_EPSILON))));
+    		}		
+    	}
+            
+    
+    	gradCheck[2] = gradApprox2;
 
-        return null;
+        return gradCheck;
     }
 
     /* 
@@ -911,28 +973,11 @@ public class ClassifierWindow extends WindowManager {
                 System.exit(1);
             }
             
-            for(int k = 0; k < currOutput.getRowDimension(); k++ ){
-                if(currOutput.get(k,0) == 1){
-                    sum += Math.log(hypot.get(k,0));
-                }
-                else if(currOutput.get(k,0) == 0){
-                    sum += Math.log(1 - hypot.get(k,0));
-                }
-                else{
-                    System.err.print("Unexpected non binary numeral in the output matrix");
-                }
-            }
-        }
-        
-        double regterm = 0.0;
-        
-        for(int i = 0; i < thetaValues.length; i++){
-            regterm += sumSquaredMatrixEntries(thetaValues[i]);
+            System.exit(1);
         }
 
-        return ((sum / -n) + regterm);
+        return 0;
     }
-
     /* You don't have to code this, but you might find it helpful for computing jTheta.  
      * It takes as input a matrix.  It computes the sum of the squares of each matrix entry,
      * with the exception of the first column of the matrix, which it ignores.
@@ -1029,8 +1074,8 @@ public class ClassifierWindow extends WindowManager {
         return '0';
     }
 
-    public void saveImage()
-    {
+    public void saveImage(){
+
         if (!digitSelected) {
 
             Object[] possibilities = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
