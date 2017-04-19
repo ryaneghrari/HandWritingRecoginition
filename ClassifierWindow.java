@@ -773,8 +773,8 @@ public class ClassifierWindow extends WindowManager {
         Matrix gradApprox1 = new Matrix(theta1Cols, 1); 
 	Matrix gradApprox2 = new Matrix(theta2Cols, 1);
 
-	for(int c  = 0; c < theta1Rows; c++){
-		for(int r = 0; i < theta1Rows; r++){
+	for(int r  = 0; r < theta1Rows; r++){
+		for(int c = 0; c < theta1Cols; c++){
 			
 			Matrix[] thetaValAdj = thetaValues;			
 
@@ -798,8 +798,8 @@ public class ClassifierWindow extends WindowManager {
         
 	gradCheck[1] = gradApprox1;
 
-	for(int c  = 0; c < theta2Rows; c++){
-		for(int r = 0; i < theta2Rows; r++){
+	for(int r  = 0; r < theta2Rows; r++){
+		for(int c = 0; c < theta2Cols; c++){
 			
 			Matrix[] thetaValAdj = thetaValues;			
 
