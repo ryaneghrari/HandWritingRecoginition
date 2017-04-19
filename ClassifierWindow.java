@@ -3,23 +3,23 @@
  * The purpose of this class is to act as the main control
  * window for performing a classification task.
  * Among functions this class should perform are
- * 
+ *
  * 1. Loading a training file (a file filled with training vectors in the format
  * we've been discussing in lecture).
- * 
+ *
  * 2. Performing backpropagation with that training file, creating
  * a weight matrix for the neural network.
- * 
+ *
  * 3. Save a weight matrix that has been previously derived via backpropagation.
- * 
+ *
  * 4. Load a previously saved weight matrix.
- * 
+ *
  * 5. Perform classification given an input vector and a weight matrix.  Classification
  * can be performed on characters drawn in the canvas or on vectors that are read from
  * an input file.
- * 
- * 
- * 
+ *
+ *
+ *
  * @authors Alan Malayev, Aidan Winters, Ryan Eghrari, Santiago Espinosa
  * @version Feb 25 2017
  */
@@ -52,7 +52,7 @@ public class ClassifierWindow extends WindowManager {
 
     private JLabel[][] myColorBoxes;   // an array of click-to-color labels
     private JLabel     resultLabel;
-    private boolean    myPenOn; 
+    private boolean    myPenOn;
     private Color      myCurrentColor; // to keep track of the current color
     private String     digit; //what digit am I drawing?
     private boolean    digitSelected = false;
@@ -64,17 +64,17 @@ public class ClassifierWindow extends WindowManager {
     private static final String BORDER = new String("      ");
     private static final double epsilon = 1.0;
     private static final long DEFAULT_SEED = 478978392;
-    private static final double DEFAULT_LAMBDA_VALUE = 1.0;
+    private static final double DEFAULT_LAMBDA_VALUE = 0.001;
     private static final double DEFAULT_ALPHA = 0.001;
     // private static final int DEFAULT_NUM_ITERATIONS = 5000000;
-    private static final int DEFAULT_NUM_ITERATIONS = 5000;
+    private static final int DEFAULT_NUM_ITERATIONS = 500;
     private static final double STOP_THRESHOLD = 0.0001;
     // This stop the program if we grow too far above our achieved minimum
     private static final double GROWTH_THRESHOLD = 5.0;
     private static final double GRADIENT_CHECKING_EPSILON = 0.0001;
     private static final int MAX_DIMENSION_GRADIENT_CHECKING = 10;
-    
-    private static final boolean GRADIENT_CHECK = false;
+
+    private static final boolean GRADIENT_CHECK = true;
 
     private JButton trainNetworkButton;
     private JButton saveThetasButton;
@@ -94,7 +94,7 @@ public class ClassifierWindow extends WindowManager {
     private DecimalFormat decimalFormat;
     public ClassifierWindow() {
         super( "Digit Classifier", 780, 800 );
-        // use a border (geographic) layout 
+        // use a border (geographic) layout
         setLayout( new BorderLayout() );
 
         String[] options = { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9" };
@@ -145,7 +145,7 @@ public class ClassifierWindow extends WindowManager {
         myQuitButton.addActionListener( this );    // make it listen for mouse clicks
         //        myQuitButton.addMouseListener( this );    // make it listen for mouse clicks
 
-        topButtonPanel.add( myClearButton ); 
+        topButtonPanel.add( myClearButton );
         topButtonPanel.add( mySaveButton );
         topButtonPanel.add( classifyVectorButton );
         topButtonPanel.add( myQuitButton );
@@ -219,9 +219,9 @@ public class ClassifierWindow extends WindowManager {
         lambda = DEFAULT_LAMBDA_VALUE;
         alpha = DEFAULT_ALPHA;
         numIterations = DEFAULT_NUM_ITERATIONS;
-        decimalFormat = new DecimalFormat("#####0.###############");    
+        decimalFormat = new DecimalFormat("#####0.###############");
 
-    }    
+    }
 
     public void buttonClicked(JButton whichButton) {
         String actionCommand = whichButton.getActionCommand();
@@ -250,7 +250,7 @@ public class ClassifierWindow extends WindowManager {
                 {
                     e.printStackTrace();
                 }
-                catch (IOException e) 
+                catch (IOException e)
                 {
                     e.printStackTrace();
                 }
@@ -371,7 +371,7 @@ public class ClassifierWindow extends WindowManager {
                             ++countCorrect;
                         }
 
-                    }     
+                    }
                     System.out.print("\n" + countCorrect + " vectors out of " + numVectors + "classified correctly!\n");
                     int proportion = (int) (((countCorrect / (double) numVectors) * 100.0) + 0.5);
                     //            Properties properties = System.getProperties();
@@ -393,7 +393,7 @@ public class ClassifierWindow extends WindowManager {
         readTrainingData();
 
         /* Rather than just waste all the processing that goes into training a matrix,
-         * this method saves the matrices (theta[1] and theta[2]) to a file, so they can be read in 
+         * this method saves the matrices (theta[1] and theta[2]) to a file, so they can be read in
          * and used again.  I have provided the code that does the reading and writing of matrices.
          */
 
@@ -416,7 +416,7 @@ public class ClassifierWindow extends WindowManager {
         {
         e.printStackTrace();
         }
-        catch (IOException e) 
+        catch (IOException e)
         {
         e.printStackTrace();
         }
@@ -450,7 +450,7 @@ public class ClassifierWindow extends WindowManager {
             System.err.println("Passed incorrectly sized matrix to getMax(Matrix m)");
         }
 
-        int maxIndex    = 0; 
+        int maxIndex    = 0;
         double maxVal   = 0.0;
 
         for(int i = 0; i < m.getRowDimension(); i++){
@@ -468,7 +468,7 @@ public class ClassifierWindow extends WindowManager {
         return maxIndex;
     }
 
-    /* 
+    /*
      * This method assumes that the readTrainingData() method has been previously run, so
      * that the training and output arrays have already been filled.  If this assumption is not
      * valid, this method will likely throw a NullPointerException.  IMPORTANT: AN ASSUMPTION OF THIS
@@ -516,7 +516,7 @@ public class ClassifierWindow extends WindowManager {
                 Matrix a_3 = logisticFunction(theta[2].times(a_2_withBias));
 
                 //set the final output, y
-                Matrix y = output[i]; 
+                Matrix y = output[i];
 
                 //compute the error for delta(2)
                 Matrix delta_3 = a_3.minus(y);
@@ -540,15 +540,15 @@ public class ClassifierWindow extends WindowManager {
             }
 
             int m = training.length;
-            
+
             Matrix[] partials;
-            
+
             if(GRADIENT_CHECK){
-                
+
                 partials = new Matrix[3];
                 partials[1] = new Matrix(HIDDEN_LAYER_SIZE,INPUT_VECTOR_DIMENSION + 1, 0);
                 partials[2] = new Matrix(NUM_OUTPUT_CLASSES, HIDDEN_LAYER_SIZE + 1, 0);
-                
+
             }
 
             for(int l = 1; l < theta.length; l++){
@@ -558,16 +558,16 @@ public class ClassifierWindow extends WindowManager {
                         double partialVal;
 
                         if(j == 0){
-                            partialVal = accumulator[l].get(i, j) / m; 
+                            partialVal = accumulator[l].get(i, j) / m;
                         }
                         else{
                             partialVal = (accumulator[l].get(i, j) / m) + lambda*(theta[l].get(i,j));
                         }
-                        
+
                         if(GRADIENT_CHECK){
-                            
+
                             partials[l].set(i, j, partialVal);
-                            
+
                         }
 
                         double newVal = theta[l].get(i,j) - (alpha)*partialVal;
@@ -576,18 +576,18 @@ public class ClassifierWindow extends WindowManager {
                     }
                 }
             }
-            
+
             if(GRADIENT_CHECK){
-                
+
                 System.out.println("Starting Gradient Check...");
-                
+
                 //partials[1].print(2, 3);
-                System.out.println(partials[1].get(2,4));
-                
+                System.out.println(partials[1].get(1,3));
+
                 Matrix[] resultGradient = gradientCheck(training, output, theta, lambda);
-                
+
                 System.out.println("Finished Gradient Check...");
-                
+
                 resultGradient[1].print(5, 1);
             }
 
@@ -605,7 +605,7 @@ public class ClassifierWindow extends WindowManager {
         if (value == JFileChooser.APPROVE_OPTION) {
 
             File file = chooser.getSelectedFile();
-            
+
             try {
                 Scanner scanner = new Scanner(file);
                 String line;
@@ -670,7 +670,7 @@ public class ClassifierWindow extends WindowManager {
     /* This method should take as input a String representing a single digit (the correct digit) and creates the
      * correct output matrix for that digit.  So, for example, if the input String is "4", the output matrix should
      * be the 10 x 1 matrix
-     * 
+     *
      *     0
      *     0
      *     0
@@ -681,7 +681,7 @@ public class ClassifierWindow extends WindowManager {
      *     0
      *     0
      *     0
-     *  
+     *
      */
     private static Matrix vectorizeY(String yValue) {
 
@@ -692,12 +692,12 @@ public class ClassifierWindow extends WindowManager {
         temp.set(val,0,1.0);
 
         return temp;
-    } 
+    }
 
     /* This method takes as input a String representing the binary representation of a digit.  Since the String should
      * have length INPUT_VECTOR_DIMENSION, one should end up with a matrix that has dimensions
-     * INPUT_VECTROR_DIMENSION x 1.  Note that the 
-     * 
+     * INPUT_VECTROR_DIMENSION x 1.  Note that the
+     *
      */
     private static Matrix inputStringToMatrix(String input) {
 
@@ -734,7 +734,7 @@ public class ClassifierWindow extends WindowManager {
         return matr;
     }
 
-    /* 
+    /*
      * This method takes a double as input, and output the value of the logistic function when applied to x.
      */
     private double logisticFunction(double x) {
@@ -745,7 +745,7 @@ public class ClassifierWindow extends WindowManager {
         return result;
     }
 
-    /* 
+    /*
      * This method takes as input column vector, and creates a matrix whose entries are
      * the values of the logistic function performed on the entries of the input matrix.
      */
@@ -764,13 +764,13 @@ public class ClassifierWindow extends WindowManager {
         for(int i = 0; i < numRows; i++){
             double newVal = logisticFunction( x.get(i,0) );
 
-            logMatr.set(i, 0, newVal); 
+            logMatr.set(i, 0, newVal);
         }
 
         return logMatr;
     }
 
-    /* 
+    /*
      * This method takes as input a single input vector (without bias unit -- you'll need to add that), along with the weight matrices, and
      * computes the output vector of the neural network. That is, it performs forward propagation.
      */
@@ -807,7 +807,7 @@ public class ClassifierWindow extends WindowManager {
 
         double biasVal = 1.0;
 
-        Matrix inputWithBias = addBiasUnit(input, biasVal);  
+        Matrix inputWithBias = addBiasUnit(input, biasVal);
 
         Matrix result1 = logisticFunction(theta1.times(inputWithBias));
 
@@ -880,14 +880,14 @@ public class ClassifierWindow extends WindowManager {
             if ( (entry <= 0) || (entry >= 1)) {
                 System.out.print("Bad entry -> " + entry + "\n");
                 return false;
-            }            
+            }
         }
 
         return true;
     }
 
     /* This method takes as input an array of matrices that represent the input training data, an array of matrices that represent
-     * the corresponding output data, an array of matrices that represent the weight matrices (well, the [1] and [2] index 
+     * the corresponding output data, an array of matrices that represent the weight matrices (well, the [1] and [2] index
      * members do), and the value of lambda.  It returns an array of matrices, each of which represents some (but not all) of
      * the partial derivatives (with respect to the individual theta entries) of the theta matrices.  In particular, the
      * [1] index matrix of the output should correspond to the partials of theta[1].  The [2] index matrix of the output should
@@ -896,32 +896,33 @@ public class ClassifierWindow extends WindowManager {
      */
     private Matrix[] gradientCheck(Matrix[] trainingData, Matrix[] outputData, Matrix[] thetaValues, double lambdaValue) {
 
-        
+
         System.out.println("In gradient Check");
-        
+
         Matrix[] gradCheck = new Matrix[3];
 
         int theta1Rows = thetaValues[1].getRowDimension();
         int theta1Cols = thetaValues[1].getColumnDimension();
 
         int theta2Rows = thetaValues[2].getRowDimension();
-        int theta2Cols = thetaValues[2].getColumnDimension();	
+        int theta2Cols = thetaValues[2].getColumnDimension();
 
-        Matrix gradApprox1 = new Matrix(theta1Rows, theta1Cols); 
+        Matrix gradApprox1 = new Matrix(theta1Rows, theta1Cols);
         Matrix gradApprox2 = new Matrix(theta2Rows, theta2Cols);
 
         System.out.println("Started Theta 1");
-        
+
         for(int r  = 0; r < theta1Rows; r++){
             for(int c = 0; c < theta1Cols; c++){
-                
-                Matrix[] thetaValAdj = thetaValues;			
+
+                Matrix[] thetaValAdj = new Matrix[3];
+                thetaValAdj[2] = thetaValues[2].copy();
 
                 Matrix thetaPlus = thetaValues[1].copy();
                 thetaPlus.set(r, c, thetaPlus.get(r, c) + GRADIENT_CHECKING_EPSILON);
-                thetaValAdj[1] = thetaPlus;	
+                thetaValAdj[1] = thetaPlus;
 
-                double thetaPlusCost = jTheta(trainingData, outputData, thetaValAdj, lambdaValue); 
+                double thetaPlusCost = jTheta(trainingData, outputData, thetaValAdj, lambdaValue);
 
                 Matrix thetaMinus = thetaValues[1].copy();
                 thetaMinus.set(r, c, thetaMinus.get(r, c) - GRADIENT_CHECKING_EPSILON);
@@ -930,29 +931,30 @@ public class ClassifierWindow extends WindowManager {
                 double thetaMinusCost = jTheta(trainingData, outputData, thetaValAdj, lambdaValue);
 
                 gradApprox1.set(r, c, ((thetaPlusCost - thetaMinusCost) / (2*(GRADIENT_CHECKING_EPSILON))));
-                
-                if(r == 2 && c == 4){
-                    
-                    System.out.println("GRadientCheck: " + gradApprox1.get(2,4));
-                    
+
+                if(r == 1 && c == 3){
+
+                    System.out.println("GRadientCheck: " + gradApprox1.get(1,3));
+
                 }
-            }		
+            }
         }
 
         gradCheck[1] = gradApprox1;
-        
+
         System.out.println("Started Theta 2");
 
         for(int r  = 0; r < theta2Rows; r++){
             for(int c = 0; c < theta2Cols; c++){
 
-                Matrix[] thetaValAdj = thetaValues;			
+                Matrix[] thetaValAdj = new Matrix[3];
+                thetaValAdj[1] = thetaValues[1].copy();
 
                 Matrix thetaPlus = thetaValues[2].copy();
                 thetaPlus.set(r, c, thetaPlus.get(r, c) + GRADIENT_CHECKING_EPSILON);
-                thetaValAdj[2] = thetaPlus;			
+                thetaValAdj[2] = thetaPlus;
 
-                double thetaPlusCost = jTheta(trainingData, outputData, thetaValAdj, lambdaValue); 
+                double thetaPlusCost = jTheta(trainingData, outputData, thetaValAdj, lambdaValue);
 
                 Matrix thetaMinus = thetaValues[2].copy();
                 thetaMinus.set(r, c, thetaMinus.get(r, c) - GRADIENT_CHECKING_EPSILON);
@@ -961,16 +963,16 @@ public class ClassifierWindow extends WindowManager {
                 double thetaMinusCost = jTheta(trainingData, outputData, thetaValAdj, lambdaValue);
 
                 gradApprox1.set(r, c, ((thetaPlusCost - thetaMinusCost) / (2*(GRADIENT_CHECKING_EPSILON))));
-            }		
+            }
         }
 
         gradCheck[2] = gradApprox2;
         return gradCheck;
     }
 
-    /* 
+    /*
      * This method takes as input an array of matrices that represent the input training data, an array of matrices that represent
-     * the corresponding output data, an array of matrices that represent the weight matrices (well, the [1] and [2] index 
+     * the corresponding output data, an array of matrices that represent the weight matrices (well, the [1] and [2] index
      * members do), and the value of lambda.  It returns a double value that represents the value of the cost function J(theta) for
      * this choice of training data, theta values, and lambda.
      */
@@ -1019,7 +1021,7 @@ public class ClassifierWindow extends WindowManager {
         return ((sum / -n) + regterm);
     }
 
-    /* You don't have to code this, but you might find it helpful for computing jTheta.  
+    /* You don't have to code this, but you might find it helpful for computing jTheta.
      * It takes as input a matrix.  It computes the sum of the squares of each matrix entry,
      * with the exception of the first column of the matrix, which it ignores.
      */
@@ -1038,7 +1040,7 @@ public class ClassifierWindow extends WindowManager {
         return sum;
     }
 
-    /* A helper method.  When debugging, it's sometimes convenient to be able to easily print out the dimensions of 
+    /* A helper method.  When debugging, it's sometimes convenient to be able to easily print out the dimensions of
      * a matrix, along with a string that identifies to you which matrix this method is measuring.
      */
     private static void printMatrixDimensions(String name, Matrix m) {
@@ -1049,7 +1051,7 @@ public class ClassifierWindow extends WindowManager {
 
     public void mousePressed( MouseEvent event )
     {
-        myPenOn = true;   
+        myPenOn = true;
     }
 
     public void mouseReleased( MouseEvent event )
@@ -1066,13 +1068,13 @@ public class ClassifierWindow extends WindowManager {
     {
         Component component     = event.getComponent();
         String    componentType = component.getClass().getName();
-        // if the class type is a JLabel, call the abstract method 
-        // to be implemented by the extending class 
+        // if the class type is a JLabel, call the abstract method
+        // to be implemented by the extending class
         if ( myPenOn && componentType.contains( "JLabel" ) )
         {
             JLabel box = (JLabel) component;
             box.setBackground( BLACK );
-        }        
+        }
     }
 
     //======================================================================
@@ -1172,7 +1174,7 @@ public class ClassifierWindow extends WindowManager {
             {
                 e.printStackTrace();
             }
-            catch (IOException e) 
+            catch (IOException e)
             {
                 e.printStackTrace();
             }
